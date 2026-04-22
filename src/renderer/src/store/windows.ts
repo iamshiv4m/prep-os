@@ -1,0 +1,169 @@
+import { create } from "zustand";
+import { nanoid } from "nanoid";
+import type { PluginManifest } from "@shared/types";
+
+export interface WindowState {
+  id: string;
+  pluginId: string;
+  title: string;
+  icon: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zIndex: number;
+  minimized: boolean;
+  maximized: boolean;
+  type: "native" | "webview";
+  entry: string;
+  /** Free-form state the app component can persist (session id, url, etc.) */
+  appState?: Record<string, unknown>;
+  /** Original position before maximizing. */
+  restore?: { x: number; y: number; width: number; height: number };
+}
+
+interface WindowStore {
+  windows: WindowState[];
+  focusedId: string | null;
+  topZ: number;
+
+  openApp: (plugin: PluginManifest, appState?: Record<string, unknown>) => string;
+  closeWindow: (id: string) => void;
+  focusWindow: (id: string) => void;
+  minimizeWindow: (id: string) => void;
+  restoreWindow: (id: string) => void;
+  toggleMaximize: (id: string, viewport: { width: number; height: number }) => void;
+  moveWindow: (id: string, x: number, y: number) => void;
+  resizeWindow: (id: string, width: number, height: number) => void;
+  updateAppState: (id: string, patch: Record<string, unknown>) => void;
+}
+
+let sequence = 10;
+
+export const useWindows = create<WindowStore>((set, get) => ({
+  windows: [],
+  focusedId: null,
+  topZ: 10,
+
+  openApp: (plugin, appState) => {
+    const id = nanoid(8);
+    sequence += 1;
+    const defaults = plugin.window?.defaultSize ?? { w: 960, h: 640 };
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+    const width = Math.min(defaults.w, viewportW - 80);
+    const height = Math.min(defaults.h, viewportH - 160);
+    const existing = get().windows.length;
+    const offset = (existing % 6) * 28;
+    const x = Math.max(40, Math.round((viewportW - width) / 2) + offset - 40);
+    const y = Math.max(40, Math.round((viewportH - height) / 2) + offset - 60);
+
+    const win: WindowState = {
+      id,
+      pluginId: plugin.id,
+      title: plugin.name,
+      icon: plugin.icon,
+      x,
+      y,
+      width,
+      height,
+      zIndex: sequence,
+      minimized: false,
+      maximized: false,
+      type: plugin.type,
+      entry: plugin.entry,
+      appState,
+    };
+    set((state) => ({
+      windows: [...state.windows, win],
+      focusedId: id,
+      topZ: sequence,
+    }));
+    return id;
+  },
+
+  closeWindow: (id) => {
+    set((state) => {
+      const windows = state.windows.filter((w) => w.id !== id);
+      const focusedId =
+        state.focusedId === id
+          ? (windows.reduce<WindowState | null>(
+              (acc, w) => (!acc || w.zIndex > acc.zIndex ? w : acc),
+              null,
+            )?.id ?? null)
+          : state.focusedId;
+      return { windows, focusedId };
+    });
+  },
+
+  focusWindow: (id) => {
+    sequence += 1;
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, zIndex: sequence, minimized: false } : w,
+      ),
+      focusedId: id,
+      topZ: sequence,
+    }));
+  },
+
+  minimizeWindow: (id) => {
+    set((state) => ({
+      windows: state.windows.map((w) => (w.id === id ? { ...w, minimized: true } : w)),
+      focusedId: state.focusedId === id ? null : state.focusedId,
+    }));
+  },
+
+  restoreWindow: (id) => {
+    sequence += 1;
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, minimized: false, zIndex: sequence } : w,
+      ),
+      focusedId: id,
+      topZ: sequence,
+    }));
+  },
+
+  toggleMaximize: (id, viewport) => {
+    set((state) => ({
+      windows: state.windows.map((w) => {
+        if (w.id !== id) return w;
+        if (w.maximized && w.restore) {
+          return { ...w, ...w.restore, maximized: false, restore: undefined };
+        }
+        return {
+          ...w,
+          restore: { x: w.x, y: w.y, width: w.width, height: w.height },
+          x: 0,
+          y: 28,
+          width: viewport.width,
+          height: viewport.height - 28 - 88,
+          maximized: true,
+        };
+      }),
+    }));
+  },
+
+  moveWindow: (id, x, y) => {
+    set((state) => ({
+      windows: state.windows.map((w) => (w.id === id ? { ...w, x, y } : w)),
+    }));
+  },
+
+  resizeWindow: (id, width, height) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, width: Math.max(320, width), height: Math.max(240, height) } : w,
+      ),
+    }));
+  },
+
+  updateAppState: (id, patch) => {
+    set((state) => ({
+      windows: state.windows.map((w) =>
+        w.id === id ? { ...w, appState: { ...w.appState, ...patch } } : w,
+      ),
+    }));
+  },
+}));

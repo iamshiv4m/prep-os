@@ -1,0 +1,281 @@
+import { nanoid } from "nanoid";
+import type { PluginManifest } from "@shared/types";
+import { getUserPlugins, setUserPlugins } from "./store.js";
+
+const BUILT_IN_PLUGINS: PluginManifest[] = [
+  {
+    id: "devtools-tech",
+    name: "DevTools Tech",
+    icon: "🛠️",
+    version: "1.0.0",
+    type: "webview",
+    entry: "https://devtools.tech/questions/all",
+    builtIn: true,
+    description: "Frontend interview questions and resources",
+    window: { defaultSize: { w: 1100, h: 760 } },
+  },
+  {
+    id: "leetcode",
+    name: "LeetCode",
+    icon: "🧩",
+    version: "1.0.0",
+    type: "webview",
+    entry: "https://leetcode.com/problemset/",
+    builtIn: true,
+    description: "DSA problems + contests",
+    window: { defaultSize: { w: 1200, h: 800 } },
+    sections: [
+      {
+        id: "problems",
+        label: "Problems",
+        icon: "📚",
+        url: "https://leetcode.com/problemset/",
+        matchPrefix: true,
+      },
+      {
+        id: "contest",
+        label: "Contest",
+        icon: "🏆",
+        url: "https://leetcode.com/contest/",
+        matchPrefix: true,
+      },
+      {
+        id: "explore",
+        label: "Explore",
+        icon: "🗺️",
+        url: "https://leetcode.com/explore/",
+        matchPrefix: true,
+      },
+      {
+        id: "discuss",
+        label: "Discuss",
+        icon: "💬",
+        url: "https://leetcode.com/discuss/",
+        matchPrefix: true,
+      },
+      {
+        id: "submissions",
+        label: "Submissions",
+        icon: "📤",
+        url: "https://leetcode.com/submissions/",
+        matchPrefix: true,
+      },
+    ],
+  },
+  {
+    id: "hackerrank",
+    name: "HackerRank",
+    icon: "💻",
+    version: "1.0.0",
+    type: "webview",
+    entry: "https://www.hackerrank.com/dashboard",
+    builtIn: true,
+    description: "Coding challenges and certifications",
+    window: { defaultSize: { w: 1200, h: 800 } },
+    sections: [
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        icon: "🏠",
+        url: "https://www.hackerrank.com/dashboard",
+        matchPrefix: true,
+      },
+      {
+        id: "prep-kit",
+        label: "Interview Kit",
+        icon: "🎯",
+        url: "https://www.hackerrank.com/interview/interview-preparation-kit",
+        matchPrefix: true,
+      },
+      {
+        id: "contests",
+        label: "Contests",
+        icon: "🏆",
+        url: "https://www.hackerrank.com/contests",
+        matchPrefix: true,
+      },
+      {
+        id: "certifications",
+        label: "Certifications",
+        icon: "🎖️",
+        url: "https://www.hackerrank.com/skills-verification",
+        matchPrefix: true,
+      },
+      {
+        id: "jobs",
+        label: "Jobs",
+        icon: "💼",
+        url: "https://www.hackerrank.com/jobs/search",
+        matchPrefix: true,
+      },
+    ],
+  },
+  {
+    id: "github",
+    name: "GitHub",
+    icon: "🐙",
+    version: "1.0.0",
+    type: "webview",
+    entry: "https://github.com",
+    builtIn: true,
+    description: "Repos, gists, discussions",
+    window: { defaultSize: { w: 1200, h: 800 } },
+    sections: [
+      { id: "home", label: "Home", icon: "🏠", url: "https://github.com" },
+      {
+        id: "pulls",
+        label: "Pull requests",
+        icon: "🔀",
+        url: "https://github.com/pulls",
+        matchPrefix: true,
+      },
+      {
+        id: "issues",
+        label: "Issues",
+        icon: "🐛",
+        url: "https://github.com/issues",
+        matchPrefix: true,
+      },
+      {
+        id: "notifications",
+        label: "Notifications",
+        icon: "🔔",
+        url: "https://github.com/notifications",
+        matchPrefix: true,
+      },
+      {
+        id: "explore",
+        label: "Explore",
+        icon: "🔎",
+        url: "https://github.com/explore",
+        matchPrefix: true,
+      },
+      {
+        id: "gists",
+        label: "Gists",
+        icon: "📝",
+        url: "https://gist.github.com",
+        matchPrefix: true,
+      },
+    ],
+  },
+  {
+    id: "excalidraw",
+    name: "Excalidraw",
+    icon: "✏️",
+    version: "1.0.0",
+    type: "webview",
+    entry: "https://excalidraw.com",
+    builtIn: true,
+    description: "System design sketchpad",
+    window: { defaultSize: { w: 1200, h: 800 } },
+  },
+  {
+    id: "youtube-prep",
+    name: "YouTube",
+    icon: "📺",
+    version: "1.0.0",
+    type: "webview",
+    entry: "https://www.youtube.com/results?search_query=frontend+system+design+interview",
+    builtIn: true,
+    description: "Video learning",
+    window: { defaultSize: { w: 1200, h: 800 } },
+  },
+  {
+    id: "feed",
+    name: "Feed",
+    icon: "📰",
+    version: "1.0.0",
+    type: "native",
+    entry: "feed",
+    builtIn: true,
+    description: "Latest tech articles from HN, Dev.to, FCC, Smashing & more",
+    window: { defaultSize: { w: 1080, h: 780 } },
+    permissions: ["network"],
+  },
+  {
+    id: "ai-chat",
+    name: "AI Chat",
+    icon: "✨",
+    version: "1.0.0",
+    type: "native",
+    entry: "ai-chat",
+    builtIn: true,
+    description: "Ask AI with screen captures",
+    window: { defaultSize: { w: 900, h: 680 } },
+    permissions: ["ai", "capture", "storage"],
+  },
+  {
+    id: "notes",
+    name: "Notes",
+    icon: "📝",
+    version: "1.0.0",
+    type: "native",
+    entry: "notes",
+    builtIn: true,
+    description: "Markdown notes + captures",
+    window: { defaultSize: { w: 880, h: 640 } },
+    permissions: ["storage"],
+  },
+  {
+    id: "playground",
+    name: "Playground",
+    icon: "🎮",
+    version: "1.0.0",
+    type: "native",
+    entry: "playground",
+    builtIn: true,
+    description: "JS/TS code playground (Monaco)",
+    window: { defaultSize: { w: 1000, h: 680 } },
+    permissions: ["storage"],
+  },
+  {
+    id: "settings",
+    name: "Settings",
+    icon: "⚙️",
+    version: "1.0.0",
+    type: "native",
+    entry: "settings",
+    builtIn: true,
+    description: "App preferences & API keys",
+    window: { defaultSize: { w: 720, h: 560 }, resizable: true },
+    permissions: ["storage"],
+  },
+  {
+    id: "dev-news",
+    name: "Dev News",
+    icon: "📰",
+    version: "1.0.0",
+    type: "native",
+    entry: "feed",
+    builtIn: true,
+    description: "Latest dev articles from HN, dev.to, GitHub Blog, more",
+    window: { defaultSize: { w: 1000, h: 720 }, resizable: true },
+    permissions: ["network", "storage"],
+  },
+];
+
+export function listPlugins(): PluginManifest[] {
+  return [...BUILT_IN_PLUGINS, ...getUserPlugins()];
+}
+
+export function addUserPlugin(
+  partial: Omit<PluginManifest, "version"> & { version?: string },
+): PluginManifest {
+  const id = partial.id || `user-${nanoid(8)}`;
+  const manifest: PluginManifest = {
+    version: "1.0.0",
+    builtIn: false,
+    window: { defaultSize: { w: 1100, h: 760 } },
+    ...partial,
+    id,
+  };
+  const current = getUserPlugins();
+  const next = [...current.filter((p) => p.id !== id), manifest];
+  setUserPlugins(next);
+  return manifest;
+}
+
+export function removeUserPlugin(id: string): void {
+  setUserPlugins(getUserPlugins().filter((p) => p.id !== id));
+}

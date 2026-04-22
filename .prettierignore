@@ -1,0 +1,39 @@
+# Dependencies
+node_modules
+
+# Build outputs
+out
+dist
+release
+build/icons
+coverage
+
+# Generated
+*.lockb
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Binary / assets
+*.icns
+*.ico
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.pdf
+*.plist
+
+# Logs
+*.log
+
+# IDE
+.vscode
+.idea
+.cursor
+
+# Misc
+.DS_Store
+.env
+.env.*
