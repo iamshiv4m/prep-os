@@ -1,4 +1,13 @@
-import { BrowserWindow, Menu, Tray, app, dialog, globalShortcut, nativeImage } from "electron";
+import {
+  BrowserWindow,
+  Menu,
+  Tray,
+  app,
+  dialog,
+  globalShortcut,
+  nativeImage,
+  screen,
+} from "electron";
 import path from "node:path";
 import fs from "node:fs";
 import { captureRegion } from "./capture.js";
@@ -14,9 +23,15 @@ let focusGuardActive = false;
 let allowQuit = false;
 
 function createMainWindow(): void {
+  const primary = screen.getPrimaryDisplay();
+  const { width: workW, height: workH } = primary.workAreaSize;
+  const { x: workX, y: workY } = primary.workArea;
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 820,
+    x: workX,
+    y: workY,
+    width: workW,
+    height: workH,
     minWidth: 1024,
     minHeight: 680,
     backgroundColor: "#000000",
@@ -36,12 +51,13 @@ function createMainWindow(): void {
   });
 
   mainWindow.once("ready-to-show", () => {
+    mainWindow?.maximize();
     mainWindow?.show();
   });
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//i.test(url)) {
-      import("electron").then(({ shell }) => shell.openExternal(url));
+      mainWindow?.webContents.send("app:openUrl", url);
     }
     return { action: "deny" };
   });
@@ -205,7 +221,14 @@ app.whenReady().then(() => {
   void setupAutoUpdate();
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createMainWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createMainWindow();
+    } else if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      if (!mainWindow.isMaximized() && !mainWindow.isFullScreen()) mainWindow.maximize();
+      mainWindow.show();
+      mainWindow.focus();
+    }
   });
 });
 

@@ -36,6 +36,7 @@ interface WindowStore {
   moveWindow: (id: string, x: number, y: number) => void;
   resizeWindow: (id: string, width: number, height: number) => void;
   updateAppState: (id: string, patch: Record<string, unknown>) => void;
+  setWindowTitle: (id: string, title: string) => void;
 }
 
 let sequence = 10;
@@ -51,12 +52,17 @@ export const useWindows = create<WindowStore>((set, get) => ({
     const defaults = plugin.window?.defaultSize ?? { w: 960, h: 640 };
     const viewportW = window.innerWidth;
     const viewportH = window.innerHeight;
-    const width = Math.min(defaults.w, viewportW - 80);
-    const height = Math.min(defaults.h, viewportH - 160);
+    // Open windows generously: ensure they fill most of the desktop so PrepOS
+    // feels like a real OS. Bigger of plugin defaults and ~90% of viewport,
+    // capped at viewport minus safe margins (for menubar / dock).
+    const targetW = Math.max(defaults.w, Math.round(viewportW * 0.9));
+    const targetH = Math.max(defaults.h, Math.round(viewportH * 0.9));
+    const width = Math.min(targetW, viewportW - 40);
+    const height = Math.min(targetH, viewportH - 110);
     const existing = get().windows.length;
     const offset = (existing % 6) * 28;
-    const x = Math.max(40, Math.round((viewportW - width) / 2) + offset - 40);
-    const y = Math.max(40, Math.round((viewportH - height) / 2) + offset - 60);
+    const x = Math.max(20, Math.round((viewportW - width) / 2) + offset - 40);
+    const y = Math.max(8, Math.round((viewportH - height) / 2) + offset - 60);
 
     const win: WindowState = {
       id,
@@ -136,7 +142,7 @@ export const useWindows = create<WindowStore>((set, get) => ({
           ...w,
           restore: { x: w.x, y: w.y, width: w.width, height: w.height },
           x: 0,
-          y: 28,
+          y: 0,
           width: viewport.width,
           height: viewport.height - 28 - 88,
           maximized: true,
@@ -164,6 +170,12 @@ export const useWindows = create<WindowStore>((set, get) => ({
       windows: state.windows.map((w) =>
         w.id === id ? { ...w, appState: { ...w.appState, ...patch } } : w,
       ),
+    }));
+  },
+
+  setWindowTitle: (id, title) => {
+    set((state) => ({
+      windows: state.windows.map((w) => (w.id === id ? { ...w, title } : w)),
     }));
   },
 }));

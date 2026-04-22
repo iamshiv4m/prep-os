@@ -6,6 +6,7 @@ import AIChat from "./AIChat";
 import Feed from "./Feed";
 import Notes from "./Notes";
 import Playground from "./Playground";
+import Reader from "./Reader";
 import Settings from "./Settings";
 import WebviewHost from "./WebviewHost";
 
@@ -48,6 +49,8 @@ export default function AppRouter({ win }: Props) {
       return <Playground />;
     case "feed":
       return <Feed />;
+    case "reader":
+      return <Reader win={win} />;
     case "settings":
       return <Settings initialTab={(win.appState?.tab as string | undefined) ?? undefined} />;
     default:

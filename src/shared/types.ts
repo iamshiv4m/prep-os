@@ -39,6 +39,8 @@ export interface PluginManifest {
   homepageShortcut?: string;
   description?: string;
   builtIn?: boolean;
+  /** Hide from Dock / Launchpad / Spotlight. Used for transient apps (e.g. Reader). */
+  hidden?: boolean;
   /** Optional list of in-app shortcuts rendered as a macOS sidebar inside the webview window. */
   sections?: PluginSection[];
 }
@@ -108,6 +110,8 @@ export interface Tip {
   link?: string;
 }
 
+export type FeedCategory = "frontend" | "backend" | "system-design" | "general";
+
 export interface FeedSource {
   id: string;
   name: string;
@@ -118,6 +122,8 @@ export interface FeedSource {
   rss: string;
   /** Used to accent source labels in the UI. */
   color?: string;
+  /** Grouping for the Dev News sidebar. */
+  category?: FeedCategory;
 }
 
 export interface FeedItem {
@@ -216,4 +222,5 @@ export interface ElectronAPI {
     refresh: () => Promise<FeedSnapshot>;
   };
   openExternal: (url: string) => Promise<void>;
+  onOpenUrl: (cb: (url: string) => void) => () => void;
 }

@@ -24,7 +24,9 @@ export default function Launchpad() {
     if (!open) setQuery("");
   }, [open]);
 
-  const filtered = plugins.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()));
+  const filtered = plugins.filter(
+    (p) => !p.hidden && p.name.toLowerCase().includes(query.toLowerCase()),
+  );
 
   const handleAdd = async () => {
     if (!name.trim() || !url.trim()) return;

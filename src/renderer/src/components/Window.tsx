@@ -63,7 +63,7 @@ export default function Window({ win, children }: WindowProps) {
       const dx = e.clientX - d.startX;
       const dy = e.clientY - d.startY;
       if (d.mode === "move") {
-        move(win.id, Math.max(0, d.origX + dx), Math.max(28, d.origY + dy));
+        move(win.id, Math.max(0, d.origX + dx), Math.max(0, d.origY + dy));
       } else if (d.mode === "resize" && d.edge) {
         let nx = d.origX;
         let ny = d.origY;

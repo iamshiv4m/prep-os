@@ -31,16 +31,18 @@ export default function Spotlight() {
   }, [open]);
 
   const commands: Command[] = useMemo(() => {
-    const base: Command[] = plugins.map((p) => ({
-      id: `app:${p.id}`,
-      title: p.name,
-      hint: p.description ?? (p.type === "webview" ? p.entry : "Native app"),
-      emoji: p.icon,
-      run: () => {
-        openApp(p);
-        setOpen(false);
-      },
-    }));
+    const base: Command[] = plugins
+      .filter((p) => !p.hidden)
+      .map((p) => ({
+        id: `app:${p.id}`,
+        title: p.name,
+        hint: p.description ?? (p.type === "webview" ? p.entry : "Native app"),
+        emoji: p.icon,
+        run: () => {
+          openApp(p);
+          setOpen(false);
+        },
+      }));
 
     base.push({
       id: "action:capture",

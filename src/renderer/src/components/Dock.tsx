@@ -95,8 +95,8 @@ export default function Dock() {
 
   const mouseX = useMotionValue(Infinity);
 
-  const pinned = plugins.filter((p) => p.builtIn && p.id !== "settings").slice(0, 10);
-  const userPinned = plugins.filter((p) => !p.builtIn);
+  const pinned = plugins.filter((p) => p.builtIn && !p.hidden && p.id !== "settings").slice(0, 10);
+  const userPinned = plugins.filter((p) => !p.builtIn && !p.hidden);
   const displayed = [...pinned, ...userPinned];
   const minimized = windows.filter((w) => w.minimized);
 

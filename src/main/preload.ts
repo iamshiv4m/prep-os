@@ -33,6 +33,17 @@ ipcRenderer.on("capture:ready", (_event, capture: Capture) => {
   });
 });
 
+const openUrlListeners = new Set<(url: string) => void>();
+ipcRenderer.on("app:openUrl", (_event, url: string) => {
+  openUrlListeners.forEach((fn) => {
+    try {
+      fn(url);
+    } catch (err) {
+      console.error("openUrl listener error", err);
+    }
+  });
+});
+
 const api: ElectronAPI = {
   getVersion: () => ipcRenderer.invoke("app:getVersion"),
   getPlatform: () => ipcRenderer.invoke("app:getPlatform"),
@@ -101,6 +112,12 @@ const api: ElectronAPI = {
     refresh: () => ipcRenderer.invoke("feed:refresh"),
   },
   openExternal: (url: string) => ipcRenderer.invoke("shell:openExternal", url),
+  onOpenUrl: (cb: (url: string) => void) => {
+    openUrlListeners.add(cb);
+    return () => {
+      openUrlListeners.delete(cb);
+    };
+  },
 };
 
 contextBridge.exposeInMainWorld("prepOSEvents", {

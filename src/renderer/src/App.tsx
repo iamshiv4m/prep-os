@@ -11,6 +11,7 @@ import { useFocus } from "./store/focus";
 import { usePlugins } from "./store/plugins";
 import { useShell } from "./store/shell";
 import { useWindows } from "./store/windows";
+import { openInApp } from "./utils/openInApp";
 
 export default function App() {
   const refreshPlugins = usePlugins((s) => s.refresh);
@@ -50,6 +51,15 @@ export default function App() {
       if (typeof off === "function") off();
     };
   }, [endFocus]);
+
+  useEffect(() => {
+    const off = window.prepOS.onOpenUrl?.((url) => {
+      openInApp({ url });
+    });
+    return () => {
+      if (typeof off === "function") off();
+    };
+  }, []);
 
   useEffect(() => {
     const off = window.prepOS.captures.onReady((capture) => {

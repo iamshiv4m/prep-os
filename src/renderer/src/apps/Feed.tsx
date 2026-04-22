@@ -1,18 +1,20 @@
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  AlertTriangle,
-  ExternalLink,
-  Loader2,
-  RefreshCw,
-  Rss,
-  Search,
-  Sparkles,
-} from "lucide-react";
+import { AlertTriangle, BookOpen, Loader2, RefreshCw, Rss, Search, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { FeedItem, FeedSnapshot, FeedSource } from "@shared/types";
+import type { FeedCategory, FeedItem, FeedSnapshot, FeedSource } from "@shared/types";
+import { openInApp } from "../utils/openInApp";
 import clsx from "../utils/clsx";
 
 const ALL = "__all__";
+
+const CATEGORY_ORDER: FeedCategory[] = ["frontend", "backend", "system-design", "general"];
+
+const CATEGORY_LABELS: Record<FeedCategory, string> = {
+  frontend: "Frontend",
+  backend: "Backend",
+  "system-design": "System Design",
+  general: "General",
+};
 
 function hostnameFor(url: string): string {
   try {
@@ -104,6 +106,21 @@ export default function Feed() {
     return map;
   }, [snapshot]);
 
+  const groupedSources = useMemo(() => {
+    const groups = new Map<FeedCategory, FeedSource[]>();
+    for (const s of sources) {
+      const cat: FeedCategory = s.category ?? "general";
+      const bucket = groups.get(cat);
+      if (bucket) bucket.push(s);
+      else groups.set(cat, [s]);
+    }
+    return CATEGORY_ORDER.map((cat) => ({
+      category: cat,
+      label: CATEGORY_LABELS[cat],
+      sources: groups.get(cat) ?? [],
+    })).filter((g) => g.sources.length > 0);
+  }, [sources]);
+
   const updated = snapshot?.updatedAt
     ? new Date(snapshot.updatedAt).toLocaleTimeString([], {
         hour: "numeric",
@@ -125,7 +142,7 @@ export default function Feed() {
             </div>
           </div>
         </div>
-        <nav className="flex flex-col gap-0.5 px-2 pt-2">
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pt-2">
           <SidebarRow
             icon={<Sparkles className="h-3.5 w-3.5" />}
             label="All sources"
@@ -133,27 +150,29 @@ export default function Feed() {
             active={selected === ALL}
             onClick={() => setSelected(ALL)}
           />
-          <div className="mx-2 mb-1 mt-2 text-[10px] uppercase tracking-[0.12em] text-white/30">
-            Sources
-          </div>
-          {sources.map((s) => {
-            const errored = snapshot?.errors.some((e) => e.sourceId === s.id);
-            return (
-              <SidebarRow
-                key={s.id}
-                icon={<span className="text-[14px] leading-none">{s.icon}</span>}
-                label={s.name}
-                count={counts.get(s.id) ?? 0}
-                errored={errored}
-                active={selected === s.id}
-                onClick={() => setSelected(s.id)}
-              />
-            );
-          })}
+          {groupedSources.map((group) => (
+            <div key={group.category}>
+              <div className="mx-2 mb-1 mt-3 text-[10px] uppercase tracking-[0.12em] text-white/30">
+                {group.label}
+              </div>
+              {group.sources.map((s) => {
+                const errored = snapshot?.errors.some((e) => e.sourceId === s.id);
+                return (
+                  <SidebarRow
+                    key={s.id}
+                    icon={<span className="text-[14px] leading-none">{s.icon}</span>}
+                    label={s.name}
+                    count={counts.get(s.id) ?? 0}
+                    errored={errored}
+                    active={selected === s.id}
+                    onClick={() => setSelected(s.id)}
+                  />
+                );
+              })}
+            </div>
+          ))}
         </nav>
-        <div className="mt-auto p-3 text-[10px] text-white/35">
-          Articles open in your default browser.
-        </div>
+        <div className="p-3 text-[10px] text-white/35">Articles open right here in PrepOS.</div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -253,6 +272,14 @@ function SidebarRow({
 
 function ArticleRow({ item, source }: { item: FeedItem; source?: FeedSource }) {
   const host = hostnameFor(item.url);
+  const handleOpen = () => {
+    openInApp({
+      url: item.url,
+      title: item.title,
+      sourceName: source?.name,
+      sourceIcon: source?.icon,
+    });
+  };
   return (
     <motion.li
       layout
@@ -262,7 +289,7 @@ function ArticleRow({ item, source }: { item: FeedItem; source?: FeedSource }) {
       transition={{ duration: 0.2 }}
     >
       <button
-        onClick={() => window.prepOS.openExternal(item.url)}
+        onClick={handleOpen}
         className="group flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03]"
       >
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-[18px] ring-1 ring-white/10">
@@ -287,7 +314,7 @@ function ArticleRow({ item, source }: { item: FeedItem; source?: FeedSource }) {
             </div>
           )}
         </div>
-        <ExternalLink className="mt-1 h-3.5 w-3.5 shrink-0 text-white/25 transition-colors group-hover:text-white/70" />
+        <BookOpen className="mt-1 h-3.5 w-3.5 shrink-0 text-white/25 transition-colors group-hover:text-white/70" />
       </button>
     </motion.li>
   );

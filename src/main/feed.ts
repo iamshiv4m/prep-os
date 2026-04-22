@@ -10,6 +10,7 @@ export const FEED_SOURCES: FeedSource[] = [
     homepage: "https://news.ycombinator.com",
     rss: "https://hacker-news.firebaseio.com/v0/topstories.json",
     color: "#ff6600",
+    category: "general",
   },
   {
     id: "dev-to",
@@ -18,14 +19,7 @@ export const FEED_SOURCES: FeedSource[] = [
     homepage: "https://dev.to",
     rss: "https://dev.to/feed",
     color: "#3b49df",
-  },
-  {
-    id: "github-blog",
-    name: "GitHub Blog",
-    icon: "🐙",
-    homepage: "https://github.blog",
-    rss: "https://github.blog/feed/",
-    color: "#6e5494",
+    category: "frontend",
   },
   {
     id: "css-tricks",
@@ -34,6 +28,7 @@ export const FEED_SOURCES: FeedSource[] = [
     homepage: "https://css-tricks.com",
     rss: "https://css-tricks.com/feed/",
     color: "#ff7b73",
+    category: "frontend",
   },
   {
     id: "smashing",
@@ -42,6 +37,7 @@ export const FEED_SOURCES: FeedSource[] = [
     homepage: "https://www.smashingmagazine.com",
     rss: "https://www.smashingmagazine.com/feed/",
     color: "#d33a2c",
+    category: "frontend",
   },
   {
     id: "vercel-blog",
@@ -50,6 +46,7 @@ export const FEED_SOURCES: FeedSource[] = [
     homepage: "https://vercel.com/blog",
     rss: "https://vercel.com/atom",
     color: "#ffffff",
+    category: "frontend",
   },
   {
     id: "react-blog",
@@ -58,12 +55,103 @@ export const FEED_SOURCES: FeedSource[] = [
     homepage: "https://react.dev/blog",
     rss: "https://react.dev/rss.xml",
     color: "#58c4dc",
+    category: "frontend",
+  },
+  {
+    id: "web-dev",
+    name: "web.dev",
+    icon: "🌐",
+    homepage: "https://web.dev",
+    rss: "https://web.dev/feed.xml",
+    color: "#4285f4",
+    category: "frontend",
+  },
+  {
+    id: "josh-comeau",
+    name: "Josh Comeau",
+    icon: "🧑‍🎨",
+    homepage: "https://www.joshwcomeau.com",
+    rss: "https://www.joshwcomeau.com/rss.xml",
+    color: "#e879f9",
+    category: "frontend",
+  },
+  {
+    id: "github-blog",
+    name: "GitHub Blog",
+    icon: "🐙",
+    homepage: "https://github.blog",
+    rss: "https://github.blog/feed/",
+    color: "#6e5494",
+    category: "backend",
+  },
+  {
+    id: "netflix-tech",
+    name: "Netflix TechBlog",
+    icon: "🎬",
+    homepage: "https://netflixtechblog.com",
+    rss: "https://netflixtechblog.com/feed",
+    color: "#e50914",
+    category: "backend",
+  },
+  {
+    id: "cloudflare-blog",
+    name: "Cloudflare",
+    icon: "☁️",
+    homepage: "https://blog.cloudflare.com",
+    rss: "https://blog.cloudflare.com/rss/",
+    color: "#f38020",
+    category: "backend",
+  },
+  {
+    id: "martin-fowler",
+    name: "Martin Fowler",
+    icon: "📐",
+    homepage: "https://martinfowler.com",
+    rss: "https://martinfowler.com/feed.atom",
+    color: "#8b5cf6",
+    category: "backend",
+  },
+  {
+    id: "high-scalability",
+    name: "High Scalability",
+    icon: "📈",
+    homepage: "https://highscalability.com",
+    rss: "https://highscalability.com/rss.xml",
+    color: "#10b981",
+    category: "backend",
+  },
+  {
+    id: "bytebytego",
+    name: "ByteByteGo",
+    icon: "🧩",
+    homepage: "https://blog.bytebytego.com",
+    rss: "https://blog.bytebytego.com/feed",
+    color: "#f59e0b",
+    category: "system-design",
+  },
+  {
+    id: "infoq-architecture",
+    name: "InfoQ Architecture",
+    icon: "🏛️",
+    homepage: "https://www.infoq.com/architecture-design/",
+    rss: "https://feed.infoq.com/architecture-design/",
+    color: "#2563eb",
+    category: "system-design",
+  },
+  {
+    id: "changelog",
+    name: "Changelog",
+    icon: "🎙️",
+    homepage: "https://changelog.com",
+    rss: "https://changelog.com/feed",
+    color: "#fbbf24",
+    category: "system-design",
   },
 ];
 
 const CACHE_TTL_MS = 15 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 10_000;
-const MAX_ITEMS_PER_SOURCE = 30;
+const MAX_ITEMS_PER_SOURCE = 20;
 const MAX_TOTAL_ITEMS = 200;
 const HN_TOP_COUNT = 15;
 const USER_AGENT = "PrepOS/0.1 (+https://github.com/shivamjha/prep-os)";

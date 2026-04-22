@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PluginManifest, PluginSection } from "@shared/types";
+import { openInApp } from "../utils/openInApp";
 import clsx from "../utils/clsx";
 
 interface Props {
@@ -102,12 +103,18 @@ export default function WebviewHost({ plugin }: Props) {
         /* ignore */
       }
     };
+    const onNewWindow = (e: Event) => {
+      const ev = e as Event & { url?: string };
+      (e as unknown as { preventDefault?: () => void }).preventDefault?.();
+      if (ev.url) openInApp({ url: ev.url });
+    };
 
     el.addEventListener("did-start-loading", onStart);
     el.addEventListener("did-stop-loading", onStop);
     el.addEventListener("page-title-updated", onTitle);
     el.addEventListener("did-navigate", onNavigate);
     el.addEventListener("did-navigate-in-page", onNavigate);
+    el.addEventListener("new-window", onNewWindow);
 
     return () => {
       el.removeEventListener("did-start-loading", onStart);
@@ -115,6 +122,7 @@ export default function WebviewHost({ plugin }: Props) {
       el.removeEventListener("page-title-updated", onTitle);
       el.removeEventListener("did-navigate", onNavigate);
       el.removeEventListener("did-navigate-in-page", onNavigate);
+      el.removeEventListener("new-window", onNewWindow);
     };
   }, [injectCSS]);
 

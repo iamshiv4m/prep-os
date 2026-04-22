@@ -253,6 +253,19 @@ const BUILT_IN_PLUGINS: PluginManifest[] = [
     window: { defaultSize: { w: 1000, h: 720 }, resizable: true },
     permissions: ["network", "storage"],
   },
+  {
+    id: "reader",
+    name: "Reader",
+    icon: "📖",
+    version: "1.0.0",
+    type: "native",
+    entry: "reader",
+    builtIn: true,
+    hidden: true,
+    description: "In-app article reader",
+    window: { defaultSize: { w: 980, h: 720 }, resizable: true },
+    permissions: ["network"],
+  },
 ];
 
 export function listPlugins(): PluginManifest[] {
