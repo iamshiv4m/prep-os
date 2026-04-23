@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain, shell } from "electron";
+import { BrowserWindow, app, ipcMain, shell } from "electron";
 import type {
   AIChatRequest,
   AIProvider,
@@ -31,11 +31,40 @@ import {
 import { chatWithAI } from "./ai-gateway.js";
 import { getFeed, listFeedSources, refreshAllFeeds } from "./feed.js";
 import { setFocusGuard } from "./focus-guard.js";
+import {
+  disableLockdown,
+  enableLockdown,
+  isLockdownActive,
+  onLockdownChanged,
+} from "./lockdown.js";
 import { TIPS, tipForDay } from "@shared/tips";
 
 export function setupIPC(getMain: () => BrowserWindow | null): void {
   ipcMain.handle("app:getVersion", () => process.env.npm_package_version ?? "0.1.0");
   ipcMain.handle("app:getPlatform", () => process.platform);
+
+  ipcMain.handle("app:quit", () => {
+    app.quit();
+  });
+
+  ipcMain.handle("app:checkForUpdates", async () => {
+    if (!app.isPackaged) {
+      return { status: "dev" as const };
+    }
+    try {
+      const { autoUpdater } = await import("electron-updater");
+      const result = await autoUpdater.checkForUpdates();
+      if (result?.updateInfo) {
+        return { status: "checking" as const, version: result.updateInfo.version };
+      }
+      return { status: "up-to-date" as const };
+    } catch (err) {
+      return {
+        status: "error" as const,
+        message: err instanceof Error ? err.message : "Unknown error",
+      };
+    }
+  });
 
   ipcMain.on("window:minimize", (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize();
@@ -114,6 +143,20 @@ export function setupIPC(getMain: () => BrowserWindow | null): void {
   });
   ipcMain.handle("focus:setGuard", (_e, active: boolean) => {
     setFocusGuard(!!active);
+  });
+
+  ipcMain.handle("lockdown:enable", () => {
+    const win = getMain();
+    return enableLockdown(win);
+  });
+  ipcMain.handle("lockdown:disable", () => {
+    return disableLockdown();
+  });
+  ipcMain.handle("lockdown:state", () => isLockdownActive());
+
+  onLockdownChanged((state) => {
+    const win = getMain();
+    win?.webContents.send("lockdown:changed", state);
   });
 
   ipcMain.handle("tips:today", () => tipForDay());

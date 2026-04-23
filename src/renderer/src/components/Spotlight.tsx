@@ -1,16 +1,18 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Camera, Search, Settings as SettingsIcon, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import type { PluginManifest } from "@shared/types";
 import { usePlugins } from "../store/plugins";
 import { useShell } from "../store/shell";
 import { useWindows } from "../store/windows";
+import PluginIcon from "./PluginIcon";
 
 interface Command {
   id: string;
   title: string;
   hint?: string;
   iconNode?: React.ReactNode;
-  emoji?: string;
+  plugin?: PluginManifest;
   run: () => void;
 }
 
@@ -37,7 +39,7 @@ export default function Spotlight() {
         id: `app:${p.id}`,
         title: p.name,
         hint: p.description ?? (p.type === "webview" ? p.entry : "Native app"),
-        emoji: p.icon,
+        plugin: p,
         run: () => {
           openApp(p);
           setOpen(false);
@@ -157,9 +159,13 @@ export default function Spotlight() {
                     (i === cursor ? "bg-white/10" : "hover:bg-white/5")
                   }
                 >
-                  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-white/10 text-base">
-                    {c.iconNode ?? c.emoji}
-                  </span>
+                  {c.plugin ? (
+                    <PluginIcon plugin={c.plugin} size={28} />
+                  ) : (
+                    <span className="flex h-7 w-7 items-center justify-center rounded-md bg-white/10 text-white/80">
+                      {c.iconNode}
+                    </span>
+                  )}
                   <span className="flex flex-1 flex-col">
                     <span className="text-white/90">{c.title}</span>
                     {c.hint && <span className="text-[11px] text-white/50">{c.hint}</span>}

@@ -183,7 +183,7 @@ const BUILT_IN_PLUGINS: PluginManifest[] = [
   },
   {
     id: "feed",
-    name: "Feed",
+    name: "Dev News",
     icon: "📰",
     version: "1.0.0",
     type: "native",
@@ -191,7 +191,7 @@ const BUILT_IN_PLUGINS: PluginManifest[] = [
     builtIn: true,
     description: "Latest tech articles from HN, Dev.to, FCC, Smashing & more",
     window: { defaultSize: { w: 1080, h: 780 } },
-    permissions: ["network"],
+    permissions: ["network", "storage"],
   },
   {
     id: "ai-chat",
@@ -220,7 +220,7 @@ const BUILT_IN_PLUGINS: PluginManifest[] = [
   {
     id: "playground",
     name: "Playground",
-    icon: "🎮",
+    icon: "🧪",
     version: "1.0.0",
     type: "native",
     entry: "playground",
@@ -240,18 +240,6 @@ const BUILT_IN_PLUGINS: PluginManifest[] = [
     description: "App preferences & API keys",
     window: { defaultSize: { w: 720, h: 560 }, resizable: true },
     permissions: ["storage"],
-  },
-  {
-    id: "dev-news",
-    name: "Dev News",
-    icon: "📰",
-    version: "1.0.0",
-    type: "native",
-    entry: "feed",
-    builtIn: true,
-    description: "Latest dev articles from HN, dev.to, GitHub Blog, more",
-    window: { defaultSize: { w: 1000, h: 720 }, resizable: true },
-    permissions: ["network", "storage"],
   },
   {
     id: "reader",

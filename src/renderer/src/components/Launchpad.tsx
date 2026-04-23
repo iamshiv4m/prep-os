@@ -1,9 +1,61 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, Search, Trash2, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Plus, Search, Sparkles, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { usePlugins } from "../store/plugins";
 import { useWindows } from "../store/windows";
 import { useShell } from "../store/shell";
+import PluginIcon from "./PluginIcon";
+
+const ICON_PRESETS = [
+  "🌐",
+  "⚡",
+  "🔥",
+  "🚀",
+  "💡",
+  "🧠",
+  "🧩",
+  "🛠️",
+  "📚",
+  "📖",
+  "📝",
+  "🎨",
+  "🎯",
+  "💻",
+  "⌨️",
+  "🖥️",
+  "🧪",
+  "🔬",
+  "🔎",
+  "📊",
+  "📈",
+  "🗂️",
+  "💬",
+  "📬",
+  "📺",
+  "🎧",
+  "🎬",
+  "🏆",
+  "🎖️",
+  "✨",
+  "🌙",
+  "☀️",
+  "🧰",
+  "🪄",
+  "🦄",
+  "🐙",
+];
+
+function deriveFavicon(url: string): string | null {
+  try {
+    const normalized = url.startsWith("http") ? url : `https://${url}`;
+    const host = new URL(normalized).hostname;
+    if (!host) return null;
+    // Google S2 is safe, cached and always renders even without the site reachable.
+    return `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+  } catch {
+    return null;
+  }
+}
 
 export default function Launchpad() {
   const open = useShell((s) => s.launchpadOpen);
@@ -19,10 +71,26 @@ export default function Launchpad() {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [icon, setIcon] = useState("🌐");
+  const [useFavicon, setUseFavicon] = useState(false);
 
   useEffect(() => {
-    if (!open) setQuery("");
+    if (!open) {
+      setQuery("");
+      setAddOpen(false);
+    }
   }, [open]);
+
+  useEffect(() => {
+    if (!addOpen) {
+      setName("");
+      setUrl("");
+      setIcon("🌐");
+      setUseFavicon(false);
+    }
+  }, [addOpen]);
+
+  const favicon = useMemo(() => (url ? deriveFavicon(url) : null), [url]);
+  const effectiveIcon = useFavicon && favicon ? favicon : icon;
 
   const filtered = plugins.filter(
     (p) => !p.hidden && p.name.toLowerCase().includes(query.toLowerCase()),
@@ -31,10 +99,7 @@ export default function Launchpad() {
   const handleAdd = async () => {
     if (!name.trim() || !url.trim()) return;
     const normalized = url.startsWith("http") ? url : `https://${url}`;
-    await addCustom({ name: name.trim(), url: normalized, icon });
-    setName("");
-    setUrl("");
-    setIcon("🌐");
+    await addCustom({ name: name.trim(), url: normalized, icon: effectiveIcon });
     setAddOpen(false);
     await refresh();
   };
@@ -84,27 +149,72 @@ export default function Launchpad() {
             </div>
 
             {addOpen && (
-              <div className="mb-6 flex w-full max-w-md flex-col gap-2 rounded-xl border border-white/15 bg-black/40 p-3 backdrop-blur-xl">
-                <div className="flex items-center gap-2">
-                  <input
-                    value={icon}
-                    onChange={(e) => setIcon(e.target.value.slice(0, 2))}
-                    maxLength={2}
-                    className="h-9 w-12 rounded-md border border-white/15 bg-white/5 text-center text-xl outline-none"
-                  />
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="App name"
-                    className="h-9 flex-1 rounded-md border border-white/15 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40"
-                  />
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-6 flex w-full max-w-md flex-col gap-3 rounded-xl border border-white/15 bg-neutral-950/70 p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.7)] backdrop-blur-2xl"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/[0.06] text-[28px]">
+                    {useFavicon && favicon ? (
+                      <img
+                        src={favicon}
+                        alt="favicon"
+                        className="h-[72%] w-[72%] rounded-md object-contain"
+                      />
+                    ) : (
+                      <span className="leading-none">{icon}</span>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-2">
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="App name"
+                      className="h-9 w-full rounded-md border border-white/15 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-white/30"
+                    />
+                    <input
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://example.com"
+                      className="h-9 w-full rounded-md border border-white/15 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40 focus:border-white/30"
+                    />
+                  </div>
                 </div>
-                <input
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://example.com"
-                  className="h-9 rounded-md border border-white/15 bg-white/5 px-3 text-sm outline-none placeholder:text-white/40"
-                />
+
+                <div className="flex items-center justify-between text-[11px] text-white/55">
+                  <span className="font-medium uppercase tracking-wider">Icon</span>
+                  <button
+                    onClick={() => favicon && setUseFavicon((v) => !v)}
+                    disabled={!favicon}
+                    className="flex items-center gap-1 rounded-md border border-white/10 px-2 py-0.5 text-[10.5px] text-white/70 hover:border-white/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                    title={favicon ? "Use site favicon" : "Enter a URL first"}
+                  >
+                    <Sparkles className="h-3 w-3" />
+                    {useFavicon ? "Using favicon" : "Auto-favicon"}
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-9 gap-1 rounded-lg border border-white/10 bg-black/30 p-2">
+                  {ICON_PRESETS.map((e) => (
+                    <button
+                      key={e}
+                      onClick={() => {
+                        setIcon(e);
+                        setUseFavicon(false);
+                      }}
+                      className={
+                        icon === e && !useFavicon
+                          ? "flex h-7 w-7 items-center justify-center rounded-md bg-white/20 text-[16px] ring-1 ring-white/30"
+                          : "flex h-7 w-7 items-center justify-center rounded-md text-[16px] hover:bg-white/10"
+                      }
+                      aria-label={`Use ${e}`}
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="flex items-center justify-end gap-2">
                   <button
                     onClick={() => setAddOpen(false)}
@@ -114,12 +224,13 @@ export default function Launchpad() {
                   </button>
                   <button
                     onClick={handleAdd}
-                    className="rounded-md bg-blue-500 px-3 py-1 text-xs font-medium text-white hover:bg-blue-400"
+                    disabled={!name.trim() || !url.trim()}
+                    className="rounded-md bg-blue-500 px-3 py-1 text-xs font-medium text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Add app
                   </button>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             <div className="grid w-full max-w-5xl grid-cols-5 gap-x-4 gap-y-8 px-12 md:grid-cols-6 lg:grid-cols-7">
@@ -127,17 +238,9 @@ export default function Launchpad() {
                 <div key={p.id} className="group relative flex flex-col items-center">
                   <button
                     onClick={() => handleOpen(p.id)}
-                    className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/10 text-[40px] shadow-inner shadow-black/30 backdrop-blur-md transition-transform hover:scale-105 hover:bg-white/15"
+                    className="transition-transform hover:-translate-y-0.5 hover:scale-[1.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                   >
-                    {p.icon.startsWith("http") || p.icon.startsWith("data:") ? (
-                      <img
-                        src={p.icon}
-                        alt={p.name}
-                        className="h-[70%] w-[70%] rounded-xl object-cover"
-                      />
-                    ) : (
-                      <span>{p.icon}</span>
-                    )}
+                    <PluginIcon plugin={p} size={80} />
                   </button>
                   <span className="mt-2 max-w-[90px] truncate text-center text-[12px] text-white/85">
                     {p.name}

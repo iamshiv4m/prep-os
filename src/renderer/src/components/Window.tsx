@@ -132,22 +132,25 @@ export default function Window({ win, children }: WindowProps) {
               })
             }
           >
-            <div className="flex items-center gap-2">
+            <div className="traffic-cluster flex items-center gap-2">
               <button
                 aria-label="Close"
-                className="traffic-light no-drag bg-[#ff5f57] hover:bg-[#ff5f57]"
+                data-glyph="×"
+                className="traffic-light no-drag bg-[#ff5f57]"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={() => close(win.id)}
               />
               <button
                 aria-label="Minimize"
-                className="traffic-light no-drag bg-[#febc2e] hover:bg-[#febc2e]"
+                data-glyph="−"
+                className="traffic-light no-drag bg-[#febc2e]"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={() => minimize(win.id)}
               />
               <button
                 aria-label="Zoom"
-                className="traffic-light no-drag bg-[#28c840] hover:bg-[#28c840]"
+                data-glyph={win.maximized ? "↙" : "+"}
+                className="traffic-light no-drag bg-[#28c840]"
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={() =>
                   toggleMax(win.id, {

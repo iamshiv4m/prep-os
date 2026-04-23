@@ -4,10 +4,13 @@ import Dock from "./components/Dock";
 import FocusPicker from "./components/FocusPicker";
 import Launchpad from "./components/Launchpad";
 import Menubar from "./components/Menubar";
+import ModePicker from "./components/ModePicker";
+import ShortcutsOverlay from "./components/ShortcutsOverlay";
 import Spotlight from "./components/Spotlight";
 import Window from "./components/Window";
 import AppRouter from "./apps/AppRouter";
 import { useFocus } from "./store/focus";
+import { useLockdown } from "./store/lockdown";
 import { usePlugins } from "./store/plugins";
 import { useShell } from "./store/shell";
 import { useWindows } from "./store/windows";
@@ -23,12 +26,22 @@ export default function App() {
   const toggleSpotlight = useShell((s) => s.toggleSpotlight);
   const setSpotlight = useShell((s) => s.setSpotlight);
   const toggleLaunchpad = useShell((s) => s.toggleLaunchpad);
+  const toggleModePicker = useShell((s) => s.toggleModePicker);
+  const shortcutsOpen = useShell((s) => s.shortcutsOpen);
+  const toggleShortcuts = useShell((s) => s.toggleShortcuts);
+  const setShortcuts = useShell((s) => s.setShortcuts);
 
   const refreshFocus = useFocus((s) => s.refresh);
   const focusActive = useFocus((s) => s.active);
   const focusTargetId = useFocus((s) => s.targetPluginId);
   const endFocus = useFocus((s) => s.end);
   const setHardLock = useFocus((s) => s.setHardLock);
+
+  const hydrateLockdown = useLockdown((s) => s.hydrate);
+  const setLockdownActive = useLockdown((s) => s.setActive);
+  const lockdownActive = useLockdown((s) => s.active);
+  const enableLockdown = useLockdown((s) => s.enable);
+  const disableLockdown = useLockdown((s) => s.disable);
 
   useEffect(() => {
     void refreshPlugins();
@@ -60,6 +73,16 @@ export default function App() {
       if (typeof off === "function") off();
     };
   }, []);
+
+  useEffect(() => {
+    void hydrateLockdown();
+    const off = window.prepOS.lockdown?.onChange((active) => {
+      setLockdownActive(active);
+    });
+    return () => {
+      if (typeof off === "function") off();
+    };
+  }, [hydrateLockdown, setLockdownActive]);
 
   useEffect(() => {
     const off = window.prepOS.captures.onReady((capture) => {
@@ -96,26 +119,49 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === "k") {
+      if (mod && e.shiftKey && e.key.toLowerCase() === "l") {
+        e.preventDefault();
+        if (lockdownActive) void disableLockdown();
+        else void enableLockdown();
+      } else if (mod && !e.shiftKey && e.key.toLowerCase() === "k") {
         e.preventDefault();
         toggleSpotlight();
       } else if (mod && e.key === ",") {
         e.preventDefault();
         const settings = plugins.find((p) => p.id === "settings");
         if (settings) openApp(settings);
-      } else if (mod && e.key.toLowerCase() === "l") {
+      } else if (mod && !e.shiftKey && e.key.toLowerCase() === "l") {
         e.preventDefault();
         toggleLaunchpad();
       } else if (mod && e.shiftKey && e.key.toLowerCase() === "a") {
         e.preventDefault();
         void window.prepOS.captures.trigger();
+      } else if (mod && e.shiftKey && e.key.toLowerCase() === "m") {
+        e.preventDefault();
+        toggleModePicker();
+      } else if (mod && e.key === "/") {
+        e.preventDefault();
+        toggleShortcuts();
       } else if (e.key === "Escape") {
         setSpotlight(false);
+        setShortcuts(false);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [plugins, openApp, toggleSpotlight, toggleLaunchpad, setSpotlight]);
+  }, [
+    plugins,
+    openApp,
+    toggleSpotlight,
+    toggleLaunchpad,
+    toggleModePicker,
+    toggleShortcuts,
+    setSpotlight,
+    setShortcuts,
+    lockdownActive,
+    enableLockdown,
+    disableLockdown,
+  ]);
 
   return (
     <div className="relative h-screen w-screen overflow-hidden">
@@ -132,6 +178,8 @@ export default function App() {
       <Launchpad />
       <Spotlight />
       <FocusPicker />
+      <ModePicker />
+      <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcuts(false)} />
     </div>
   );
 }

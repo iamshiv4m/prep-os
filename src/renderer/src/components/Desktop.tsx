@@ -65,18 +65,12 @@ export default function Desktop() {
   };
 
   const quickStart = plugins.filter((p) =>
-    [
-      "devtools-tech",
-      "leetcode",
-      "ai-chat",
-      "dev-news",
-      "playground",
-      "notes",
-      "excalidraw",
-    ].includes(p.id),
+    ["devtools-tech", "leetcode", "ai-chat", "feed", "playground", "notes", "excalidraw"].includes(
+      p.id,
+    ),
   );
 
-  const feedPlugin = useMemo(() => plugins.find((p) => p.id === "dev-news"), [plugins]);
+  const feedPlugin = useMemo(() => plugins.find((p) => p.id === "feed"), [plugins]);
 
   return (
     <div className="wallpaper wallpaper-noise relative h-full w-full overflow-hidden">

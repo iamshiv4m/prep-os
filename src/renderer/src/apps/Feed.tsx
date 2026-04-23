@@ -3,6 +3,7 @@ import { AlertTriangle, BookOpen, Loader2, RefreshCw, Rss, Search, Sparkles } fr
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FeedCategory, FeedItem, FeedSnapshot, FeedSource } from "@shared/types";
 import { openInApp } from "../utils/openInApp";
+import { useNotifications } from "../store/notifications";
 import clsx from "../utils/clsx";
 
 const ALL = "__all__";
@@ -63,7 +64,23 @@ export default function Feed() {
       setLoading(true);
       setError(null);
       const data = await window.prepOS.feed.refresh();
-      setSnapshot(data);
+      setSnapshot((prev) => {
+        const prevIds = new Set((prev?.items ?? []).map((i) => i.id));
+        const added = data.items.filter((i) => !prevIds.has(i.id)).length;
+        if (prev && added > 0) {
+          useNotifications.getState().push({
+            kind: "feed",
+            icon: "📰",
+            title: `${added} new ${added === 1 ? "article" : "articles"} in Dev News`,
+            body: data.items
+              .filter((i) => !prevIds.has(i.id))
+              .slice(0, 2)
+              .map((i) => `• ${i.title}`)
+              .join("\n"),
+          });
+        }
+        return data;
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't refresh");
     } finally {

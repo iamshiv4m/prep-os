@@ -15,6 +15,7 @@ import clsx from "../utils/clsx";
 
 interface Props {
   plugin: PluginManifest;
+  winId?: string;
 }
 
 type ElectronWebView = HTMLElement & {
@@ -54,7 +55,7 @@ function matchSection(section: PluginSection, current: string): boolean {
   return current === section.url;
 }
 
-export default function WebviewHost({ plugin }: Props) {
+export default function WebviewHost({ plugin, winId }: Props) {
   const url = plugin.entry;
   const injectCSS = plugin.injectCSS;
   const sections = useMemo(() => plugin.sections ?? [], [plugin.sections]);
@@ -142,6 +143,20 @@ export default function WebviewHost({ plugin }: Props) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [hasSidebar]);
+
+  useEffect(() => {
+    if (!winId) return;
+    const handler = (e: Event) => {
+      const ev = e as CustomEvent<{ winId: string; url: string }>;
+      if (!ev.detail || ev.detail.winId !== winId) return;
+      const target = ev.detail.url;
+      if (!ref.current || !target) return;
+      const normalized = /^https?:\/\//i.test(target) ? target : `https://${target}`;
+      ref.current.src = normalized;
+    };
+    window.addEventListener("prepos:navigate", handler as EventListener);
+    return () => window.removeEventListener("prepos:navigate", handler as EventListener);
+  }, [winId]);
 
   const navigate = (target: string) => {
     if (!ref.current) return;

@@ -77,17 +77,26 @@ textarea,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  font-size: 9px;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.55);
+  font-weight: 700;
 }
 
 .traffic-light::before {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
+  content: attr(data-glyph);
   opacity: 0;
   transition: opacity 120ms ease;
+  transform: translateY(-0.5px);
 }
 
-.traffic-light:hover::before {
+/* Reveal the glyph only when hovering the whole cluster */
+.traffic-cluster:hover .traffic-light::before {
   opacity: 1;
+}
+
+.traffic-light:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline-offset: 1px;
 }

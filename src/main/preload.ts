@@ -44,9 +44,22 @@ ipcRenderer.on("app:openUrl", (_event, url: string) => {
   });
 });
 
+const lockdownListeners = new Set<(active: boolean) => void>();
+ipcRenderer.on("lockdown:changed", (_event, active: boolean) => {
+  lockdownListeners.forEach((fn) => {
+    try {
+      fn(active);
+    } catch (err) {
+      console.error("lockdown listener error", err);
+    }
+  });
+});
+
 const api: ElectronAPI = {
   getVersion: () => ipcRenderer.invoke("app:getVersion"),
   getPlatform: () => ipcRenderer.invoke("app:getPlatform"),
+  quit: () => ipcRenderer.invoke("app:quit"),
+  checkForUpdates: () => ipcRenderer.invoke("app:checkForUpdates"),
   windowControls: {
     minimize: () => ipcRenderer.send("window:minimize"),
     maximize: () => ipcRenderer.send("window:maximize"),
@@ -117,6 +130,17 @@ const api: ElectronAPI = {
     return () => {
       openUrlListeners.delete(cb);
     };
+  },
+  lockdown: {
+    enable: () => ipcRenderer.invoke("lockdown:enable"),
+    disable: () => ipcRenderer.invoke("lockdown:disable"),
+    state: () => ipcRenderer.invoke("lockdown:state"),
+    onChange: (cb: (active: boolean) => void) => {
+      lockdownListeners.add(cb);
+      return () => {
+        lockdownListeners.delete(cb);
+      };
+    },
   },
 };
 

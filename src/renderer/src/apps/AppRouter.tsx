@@ -29,7 +29,7 @@ export default function AppRouter({ win }: Props) {
   if (!plugin) return <div className="p-6 text-white/60">Plugin not found</div>;
 
   if (plugin.type === "webview") {
-    return <WebviewHost plugin={plugin} />;
+    return <WebviewHost plugin={plugin} winId={win.id} />;
   }
 
   switch (plugin.entry) {

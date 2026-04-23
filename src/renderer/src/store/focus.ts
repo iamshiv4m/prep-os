@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { nanoid } from "nanoid";
 import type { FocusSession, PluginManifest } from "@shared/types";
+import { useNotifications } from "./notifications";
 
 const MIN_SESSION_MS = 10_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -100,6 +101,14 @@ export const useFocus = create<FocusStore>((set, get) => ({
     };
     await window.prepOS.focus.append(session);
     await get().refresh();
+
+    useNotifications.getState().push({
+      kind: "focus",
+      icon: session.pluginIcon ?? "🎯",
+      title: `Focused on ${session.pluginName}`,
+      body: `Session lasted ${formatDuration(durationMs)}. Keep the streak going!`,
+    });
+
     return session;
   },
 

@@ -158,9 +158,17 @@ export interface AIChatResponse {
   error?: string;
 }
 
+export type UpdateCheckResult =
+  | { status: "dev" }
+  | { status: "up-to-date" }
+  | { status: "checking"; version: string }
+  | { status: "error"; message: string };
+
 export interface ElectronAPI {
   getVersion: () => Promise<string>;
   getPlatform: () => Promise<NodeJS.Platform>;
+  quit: () => Promise<void>;
+  checkForUpdates: () => Promise<UpdateCheckResult>;
   windowControls: {
     minimize: () => void;
     maximize: () => void;
@@ -223,4 +231,10 @@ export interface ElectronAPI {
   };
   openExternal: (url: string) => Promise<void>;
   onOpenUrl: (cb: (url: string) => void) => () => void;
+  lockdown: {
+    enable: () => Promise<boolean>;
+    disable: () => Promise<boolean>;
+    state: () => Promise<boolean>;
+    onChange: (cb: (active: boolean) => void) => () => void;
+  };
 }

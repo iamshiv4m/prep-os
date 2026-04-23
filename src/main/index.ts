@@ -14,6 +14,7 @@ import { captureRegion } from "./capture.js";
 import { setupIPC } from "./ipc.js";
 import { getSettings } from "./store.js";
 import { setOnFocusGuardChanged } from "./focus-guard.js";
+import { disableLockdown, isLockdownActive } from "./lockdown.js";
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
 
@@ -23,24 +24,30 @@ let focusGuardActive = false;
 let allowQuit = false;
 
 function createMainWindow(): void {
+  const isMac = process.platform === "darwin";
   const primary = screen.getPrimaryDisplay();
-  const { width: workW, height: workH } = primary.workAreaSize;
-  const { x: workX, y: workY } = primary.workArea;
+  const { width: screenW, height: screenH } = primary.size;
+  const { x: screenX, y: screenY } = primary.bounds;
 
   mainWindow = new BrowserWindow({
-    x: workX,
-    y: workY,
-    width: workW,
-    height: workH,
+    x: screenX,
+    y: screenY,
+    width: screenW,
+    height: screenH,
     minWidth: 1024,
     minHeight: 680,
     backgroundColor: "#000000",
     show: false,
     titleBarStyle: "hiddenInset",
     trafficLightPosition: { x: 14, y: 14 },
-    vibrancy: process.platform === "darwin" ? "under-window" : undefined,
+    vibrancy: isMac ? "under-window" : undefined,
     visualEffectState: "active",
-    frame: process.platform === "darwin",
+    frame: isMac,
+    // Always boot in fullscreen on both platforms.
+    // On macOS we use "simple fullscreen" so we stay in the current Space
+    // (native fullscreen spawns a new Space which feels disruptive).
+    fullscreen: !isMac,
+    simpleFullscreen: isMac,
     webPreferences: {
       preload: path.join(__dirname, "..", "preload", "preload.js"),
       contextIsolation: true,
@@ -51,7 +58,11 @@ function createMainWindow(): void {
   });
 
   mainWindow.once("ready-to-show", () => {
-    mainWindow?.maximize();
+    if (isMac) {
+      if (!mainWindow?.isSimpleFullScreen()) mainWindow?.setSimpleFullScreen(true);
+    } else {
+      if (!mainWindow?.isFullScreen()) mainWindow?.setFullScreen(true);
+    }
     mainWindow?.show();
   });
 
@@ -224,8 +235,15 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createMainWindow();
     } else if (mainWindow) {
+      const isMac = process.platform === "darwin";
       if (mainWindow.isMinimized()) mainWindow.restore();
-      if (!mainWindow.isMaximized() && !mainWindow.isFullScreen()) mainWindow.maximize();
+      if (isMac) {
+        if (!mainWindow.isSimpleFullScreen() && !mainWindow.isFullScreen()) {
+          mainWindow.setSimpleFullScreen(true);
+        }
+      } else {
+        if (!mainWindow.isFullScreen()) mainWindow.setFullScreen(true);
+      }
       mainWindow.show();
       mainWindow.focus();
     }
@@ -233,7 +251,33 @@ app.whenReady().then(() => {
 });
 
 app.on("before-quit", (event) => {
-  if (allowQuit || !focusGuardActive) return;
+  if (allowQuit) return;
+
+  if (isLockdownActive()) {
+    event.preventDefault();
+    const win = mainWindow ?? BrowserWindow.getAllWindows()[0];
+    if (win && !win.isVisible()) win.show();
+    win?.focus();
+    const result = dialog.showMessageBoxSync(win ?? undefined, {
+      type: "warning",
+      buttons: ["Stay in Lockdown", "Unlock & Quit"],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+      title: "Lockdown is active",
+      message: "PrepOS is locked to keep you focused.",
+      detail:
+        "You asked not to be able to switch away. Unlock first if you really want to quit, or keep grinding.",
+    });
+    if (result === 1) {
+      disableLockdown();
+      allowQuit = true;
+      setTimeout(() => app.quit(), 120);
+    }
+    return;
+  }
+
+  if (!focusGuardActive) return;
   event.preventDefault();
   const win = mainWindow ?? BrowserWindow.getAllWindows()[0];
   if (win && !win.isVisible()) win.show();
