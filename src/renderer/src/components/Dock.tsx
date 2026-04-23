@@ -9,8 +9,11 @@ import clsx from "../utils/clsx";
 import PluginIcon from "./PluginIcon";
 
 const DOCK_SIZE = 52;
-const MAX_SIZE = 72;
-const SPREAD = 110;
+const MAX_SIZE = 68;
+// Keep the magnification radius smaller than the icon-to-icon distance
+// (~58px center-to-center with gap-1.5) so neighbor icons stay calm when
+// you're clearly hovering a single tile.
+const SPREAD = 50;
 
 /**
  * Common magnification slot. Renders a fixed-size tile inside a motion box
@@ -36,9 +39,9 @@ function DockSlot({
     return val - bounds.x - bounds.width / 2;
   });
   const scaleT = useTransform(distance, [-SPREAD, 0, SPREAD], [1, MAX_SIZE / DOCK_SIZE, 1]);
-  const scale = useSpring(scaleT, { mass: 0.1, stiffness: 220, damping: 24 });
-  const liftT = useTransform(distance, [-SPREAD, 0, SPREAD], [0, -6, 0]);
-  const lift = useSpring(liftT, { mass: 0.1, stiffness: 220, damping: 24 });
+  const scale = useSpring(scaleT, { mass: 0.08, stiffness: 260, damping: 22 });
+  const liftT = useTransform(distance, [-SPREAD, 0, SPREAD], [0, -4, 0]);
+  const lift = useSpring(liftT, { mass: 0.08, stiffness: 260, damping: 22 });
 
   return (
     <motion.button
