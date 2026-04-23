@@ -15,8 +15,13 @@ export const usePlugins = create<PluginsStore>((set, get) => ({
 
   refresh: async () => {
     set({ loading: true });
-    const plugins = await window.prepOS.plugins.list();
-    set({ plugins, loading: false });
+    try {
+      const plugins = await window.prepOS.plugins.list();
+      set({ plugins, loading: false });
+    } catch (err) {
+      console.error("[prepos] plugins.refresh failed", err);
+      set({ loading: false });
+    }
   },
 
   addCustom: async ({ name, url, icon }) => {

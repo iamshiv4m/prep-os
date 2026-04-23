@@ -12,6 +12,12 @@ files:
   - out/**/*
   - package.json
 
+extraResources:
+  - from: build/icon.png
+    to: icon.png
+  - from: resources/tray-icon.png
+    to: tray-icon.png
+
 mac:
   category: public.app-category.developer-tools
   target:
@@ -30,8 +36,6 @@ mac:
   notarize: false
   extendInfo:
     NSScreenCaptureUsageDescription: PrepOS captures regions of your screen so you can ask the in-app AI questions about them.
-    NSCameraUsageDescription: PrepOS does not use the camera directly; this entry is required by the hardened runtime entitlement.
-    NSMicrophoneUsageDescription: PrepOS does not record audio; this entry is required by the hardened runtime entitlement.
 
 dmg:
   sign: false
@@ -42,11 +46,20 @@ win:
     - target: nsis
       arch:
         - x64
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  artifactName: ${productName}-Setup-${version}.${ext}
 
 linux:
   target:
     - AppImage
     - deb
+  icon: build/icon.png
+  category: Development
 
 publish:
   provider: github

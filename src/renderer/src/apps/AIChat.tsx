@@ -38,22 +38,29 @@ export default function AIChat({ seedCapture, onConsumeCapture }: Props) {
 
   useEffect(() => {
     (async () => {
-      const [s, list] = await Promise.all([
-        window.prepOS.settings.get(),
-        window.prepOS.chat.listSessions(),
-      ]);
-      setSettings(s);
-      const ordered = [...list].sort((a, b) => b.updatedAt - a.updatedAt);
-      if (ordered.length === 0) {
+      try {
+        const [s, list] = await Promise.all([
+          window.prepOS.settings.get(),
+          window.prepOS.chat.listSessions(),
+        ]);
+        setSettings(s);
+        const ordered = [...list].sort((a, b) => b.updatedAt - a.updatedAt);
+        if (ordered.length === 0) {
+          const fresh = makeSession();
+          setSessions([fresh]);
+          setActiveId(fresh.id);
+        } else {
+          setSessions(ordered);
+          setActiveId(ordered[0].id);
+        }
+        const key = await window.prepOS.settings.getApiKey(s.aiProvider);
+        setApiKeyMissing(!key);
+      } catch (err) {
+        console.error("[prepos] AIChat init failed", err);
         const fresh = makeSession();
         setSessions([fresh]);
         setActiveId(fresh.id);
-      } else {
-        setSessions(ordered);
-        setActiveId(ordered[0].id);
       }
-      const key = await window.prepOS.settings.getApiKey(s.aiProvider);
-      setApiKeyMissing(!key);
     })();
   }, []);
 

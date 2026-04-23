@@ -1,5 +1,5 @@
 import { ChevronRight, Rocket, Sparkles, X } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { usePlugins } from "../store/plugins";
 import { useWindows } from "../store/windows";
 import { useFocus } from "../store/focus";
@@ -63,6 +63,14 @@ export default function ModeSwitcher() {
 
   const pushNotification = useNotifications((s) => s.push);
 
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
+    };
+  }, []);
+
   const active = modes.find((m) => m.id === activeId) ?? null;
 
   const progressPct = useMemo(() => {
@@ -79,14 +87,16 @@ export default function ModeSwitcher() {
       .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
     toOpen.slice(0, 4).forEach((plugin, idx) => {
-      setTimeout(() => openApp(plugin), idx * 90);
+      const t = setTimeout(() => openApp(plugin), idx * 90);
+      timersRef.current.push(t);
     });
 
     if (mode.focus.enabled && !focusActive) {
       setHardLock(mode.focus.hardLock);
       const target = toOpen[0];
       if (target) {
-        setTimeout(() => startFocus(target), toOpen.length * 90 + 200);
+        const t = setTimeout(() => startFocus(target), toOpen.length * 90 + 200);
+        timersRef.current.push(t);
       }
     }
 

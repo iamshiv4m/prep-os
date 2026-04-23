@@ -1,6 +1,23 @@
 import type { AIChatRequest, AIChatResponse, AIProvider } from "@shared/types";
 import { getApiKey } from "./store.js";
 
+// Long enough for multimodal (image) prompts to think, short enough that a
+// hung connection doesn't freeze the user's chat forever.
+const AI_TIMEOUT_MS = 60_000;
+
+function timeoutSignal(ms: number): { signal: AbortSignal; cancel: () => void } {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return { signal: controller.signal, cancel: () => clearTimeout(timer) };
+}
+
+function isTimeoutError(err: unknown): boolean {
+  if (!err) return false;
+  const name = err instanceof Error ? err.name : "";
+  const msg = err instanceof Error ? err.message.toLowerCase() : String(err).toLowerCase();
+  return name === "AbortError" || msg.includes("aborted") || msg.includes("timeout");
+}
+
 function extractImageBase64(
   dataUrl: string | undefined,
 ): { base64: string; mediaType: string } | null {
@@ -31,31 +48,48 @@ async function callOpenAI(req: AIChatRequest, apiKey: string): Promise<AIChatRes
     return { role: m.role, content: m.content };
   });
 
-  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: req.model,
-      messages,
-      temperature: 0.4,
-    }),
-  });
+  const { signal, cancel } = timeoutSignal(AI_TIMEOUT_MS);
+  try {
+    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: req.model,
+        messages,
+        temperature: 0.4,
+      }),
+      signal,
+    });
 
-  if (!resp.ok) {
-    const errText = await resp.text();
+    if (!resp.ok) {
+      const errText = await resp.text();
+      return {
+        content: "",
+        error: `OpenAI ${resp.status}: ${errText.slice(0, 500)}`,
+      };
+    }
+    const data = (await resp.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const content = data.choices?.[0]?.message?.content ?? "";
+    return { content };
+  } catch (err) {
+    if (isTimeoutError(err)) {
+      return {
+        content: "",
+        error: `OpenAI request timed out after ${Math.round(AI_TIMEOUT_MS / 1000)}s. Check your network and try again.`,
+      };
+    }
     return {
       content: "",
-      error: `OpenAI ${resp.status}: ${errText.slice(0, 500)}`,
+      error: err instanceof Error ? err.message : String(err),
     };
+  } finally {
+    cancel();
   }
-  const data = (await resp.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = data.choices?.[0]?.message?.content ?? "";
-  return { content };
 }
 
 async function callAnthropic(req: AIChatRequest, apiKey: string): Promise<AIChatResponse> {
@@ -82,38 +116,55 @@ async function callAnthropic(req: AIChatRequest, apiKey: string): Promise<AIChat
       return { role: m.role, content: contentParts };
     });
 
-  const resp = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model: req.model,
-      max_tokens: 2048,
-      ...(systemMessage ? { system: systemMessage } : {}),
-      messages: chatMessages,
-    }),
-  });
+  const { signal, cancel } = timeoutSignal(AI_TIMEOUT_MS);
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: req.model,
+        max_tokens: 2048,
+        ...(systemMessage ? { system: systemMessage } : {}),
+        messages: chatMessages,
+      }),
+      signal,
+    });
 
-  if (!resp.ok) {
-    const errText = await resp.text();
+    if (!resp.ok) {
+      const errText = await resp.text();
+      return {
+        content: "",
+        error: `Anthropic ${resp.status}: ${errText.slice(0, 500)}`,
+      };
+    }
+    const data = (await resp.json()) as {
+      content?: Array<{ type: string; text?: string }>;
+    };
+    const content =
+      data.content
+        ?.filter((c) => c.type === "text")
+        .map((c) => c.text ?? "")
+        .join("\n") ?? "";
+    return { content };
+  } catch (err) {
+    if (isTimeoutError(err)) {
+      return {
+        content: "",
+        error: `Anthropic request timed out after ${Math.round(AI_TIMEOUT_MS / 1000)}s. Check your network and try again.`,
+      };
+    }
     return {
       content: "",
-      error: `Anthropic ${resp.status}: ${errText.slice(0, 500)}`,
+      error: err instanceof Error ? err.message : String(err),
     };
+  } finally {
+    cancel();
   }
-  const data = (await resp.json()) as {
-    content?: Array<{ type: string; text?: string }>;
-  };
-  const content =
-    data.content
-      ?.filter((c) => c.type === "text")
-      .map((c) => c.text ?? "")
-      .join("\n") ?? "";
-  return { content };
 }
 
 export async function chatWithAI(req: AIChatRequest): Promise<AIChatResponse> {

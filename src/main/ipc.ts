@@ -114,11 +114,29 @@ export function setupIPC(getMain: () => BrowserWindow | null): void {
 
   ipcMain.handle("ai:chat", (_e, req: AIChatRequest) => chatWithAI(req));
 
+  // Size caps to stop the electron-store JSON from exploding when users pile
+  // up long chats or paste big blobs into notes. Older messages stay on disk
+  // only in the most recent 200 sessions × 100 messages window.
+  const MAX_MESSAGES_PER_SESSION = 100;
+  const MAX_NOTE_BODY_CHARS = 200_000;
+  const MAX_MESSAGE_CONTENT_CHARS = 20_000;
+
+  function trimSession(session: ChatSession): ChatSession {
+    const messages = session.messages.slice(-MAX_MESSAGES_PER_SESSION).map((m) => ({
+      ...m,
+      content:
+        m.content && m.content.length > MAX_MESSAGE_CONTENT_CHARS
+          ? m.content.slice(0, MAX_MESSAGE_CONTENT_CHARS) + "\n…(truncated)"
+          : m.content,
+    }));
+    return { ...session, messages };
+  }
+
   ipcMain.handle("chat:listSessions", () => getChatSessions());
   ipcMain.handle("chat:saveSession", (_e, session: ChatSession) => {
     const list = getChatSessions();
     const filtered = list.filter((s) => s.id !== session.id);
-    setChatSessions([session, ...filtered].slice(0, 200));
+    setChatSessions([trimSession(session), ...filtered].slice(0, 200));
   });
   ipcMain.handle("chat:removeSession", (_e, id: string) => {
     setChatSessions(getChatSessions().filter((s) => s.id !== id));
@@ -128,7 +146,14 @@ export function setupIPC(getMain: () => BrowserWindow | null): void {
   ipcMain.handle("notes:save", (_e, note: Note) => {
     const list = getNotes();
     const filtered = list.filter((n) => n.id !== note.id);
-    setNotes([note, ...filtered].slice(0, 500));
+    const capped: Note = {
+      ...note,
+      body:
+        note.body && note.body.length > MAX_NOTE_BODY_CHARS
+          ? note.body.slice(0, MAX_NOTE_BODY_CHARS)
+          : note.body,
+    };
+    setNotes([capped, ...filtered].slice(0, 500));
   });
   ipcMain.handle("notes:remove", (_e, id: string) => {
     setNotes(getNotes().filter((n) => n.id !== id));

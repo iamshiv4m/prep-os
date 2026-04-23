@@ -336,7 +336,7 @@ export default function Menubar() {
             : "rgba(255,255,255,0.10)",
       }}
     >
-      <div className="no-drag flex items-center gap-1.5 pl-20">
+      <div className={clsx("no-drag flex items-center gap-1.5", isMac ? "pl-20" : "pl-3")}>
         <MenuDropdown
           label={<span className="font-semibold">PrepOS</span>}
           items={preposItems}
@@ -469,6 +469,39 @@ export default function Menubar() {
           🔎
         </button>
         <ClockPopover date={date} time={time} />
+        {!isMac && (
+          <div className="no-drag ml-1 flex items-center gap-0.5 border-l border-white/10 pl-2">
+            <button
+              onClick={() => window.prepOS.windowControls.minimize()}
+              title="Minimize"
+              className="flex h-5 w-7 items-center justify-center rounded text-white/60 hover:bg-white/10 hover:text-white"
+            >
+              <Minimize2 className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => window.prepOS.windowControls.maximize()}
+              title="Maximize / restore"
+              className="flex h-5 w-7 items-center justify-center rounded text-white/60 hover:bg-white/10 hover:text-white"
+            >
+              <Maximize2 className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => {
+                if (lockdownActive || focusHardLock) return; // hard-locked sessions own quit via dialog
+                window.prepOS.windowControls.close();
+              }}
+              title={lockdownActive ? "Unlock to close" : "Close"}
+              className={clsx(
+                "flex h-5 w-7 items-center justify-center rounded text-white/60",
+                lockdownActive || focusHardLock
+                  ? "opacity-40"
+                  : "hover:bg-rose-500/80 hover:text-white",
+              )}
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        )}
       </div>
       <FocusStats open={statsOpen} onClose={() => setStatsOpen(false)} />
       <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />

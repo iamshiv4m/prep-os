@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Lock, Rocket, Target, X } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useShell } from "../store/shell";
 import { useFocus } from "../store/focus";
 import { usePlugins } from "../store/plugins";
@@ -26,6 +26,16 @@ export default function ModePicker() {
   const setHardLock = useFocus((s) => s.setHardLock);
 
   const pushNotification = useNotifications((s) => s.push);
+
+  // Track the staggered openApp / startFocus timers so we cancel them if the
+  // user bails out of the mode picker while launches are still queuing.
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -55,14 +65,16 @@ export default function ModePicker() {
       .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
     toOpen.slice(0, 4).forEach((plugin, idx) => {
-      setTimeout(() => openApp(plugin), idx * 90);
+      const t = setTimeout(() => openApp(plugin), idx * 90);
+      timersRef.current.push(t);
     });
 
     if (mode.focus.enabled && !focusActive) {
       setHardLock(mode.focus.hardLock);
       const target = toOpen[0];
       if (target) {
-        setTimeout(() => startFocus(target), toOpen.length * 90 + 200);
+        const t = setTimeout(() => startFocus(target), toOpen.length * 90 + 200);
+        timersRef.current.push(t);
       }
     }
 

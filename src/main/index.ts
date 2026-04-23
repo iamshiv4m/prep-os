@@ -7,6 +7,7 @@ import {
   globalShortcut,
   nativeImage,
   screen,
+  shell,
 } from "electron";
 import path from "node:path";
 import fs from "node:fs";
@@ -18,6 +19,26 @@ import { disableLockdown, isLockdownActive } from "./lockdown.js";
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
 
+/**
+ * Hosts where the app's own chrome is allowed to navigate. Everything else
+ * is treated as "external" and shunted to the renderer's openInApp flow so
+ * users never accidentally lose the app shell to an arbitrary page.
+ */
+function isInternalOrigin(url: string): boolean {
+  try {
+    const u = new URL(url);
+    if (u.protocol === "file:") return true;
+    if (u.protocol === "devtools:") return true;
+    // Dev server (electron-vite)
+    if (u.protocol === "http:" && (u.hostname === "localhost" || u.hostname === "127.0.0.1")) {
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let focusGuardActive = false;
@@ -28,6 +49,19 @@ function createMainWindow(): void {
   const primary = screen.getPrimaryDisplay();
   const { width: screenW, height: screenH } = primary.size;
   const { x: screenX, y: screenY } = primary.bounds;
+
+  // On Windows/Linux the taskbar/tray gets the BrowserWindow icon at runtime.
+  // We look next to the app resources folder (packaged build) first, then
+  // fall back to the build/ workspace folder (unpackaged dev).
+  const runtimeIconPath = (() => {
+    if (isMac) return undefined;
+    const candidates = [
+      path.join(process.resourcesPath ?? "", "icon.png"),
+      path.join(__dirname, "..", "..", "build", "icon.png"),
+      path.join(__dirname, "..", "..", "resources", "icon.png"),
+    ];
+    return candidates.find((p) => fs.existsSync(p));
+  })();
 
   mainWindow = new BrowserWindow({
     x: screenX,
@@ -43,6 +77,7 @@ function createMainWindow(): void {
     vibrancy: isMac ? "under-window" : undefined,
     visualEffectState: "active",
     frame: isMac,
+    icon: runtimeIconPath,
     // Always boot in fullscreen on both platforms.
     // On macOS we use "simple fullscreen" so we stay in the current Space
     // (native fullscreen spawns a new Space which feels disruptive).
@@ -71,6 +106,18 @@ function createMainWindow(): void {
       mainWindow?.webContents.send("app:openUrl", url);
     }
     return { action: "deny" };
+  });
+
+  // Block any attempt to navigate the app's own shell away from the renderer
+  // (e.g. a rogue link or a buggy redirect would otherwise replace the whole
+  // UI with an external page and the user loses PrepOS entirely).
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    if (!isInternalOrigin(url)) {
+      event.preventDefault();
+      if (/^https?:\/\//i.test(url)) {
+        mainWindow?.webContents.send("app:openUrl", url);
+      }
+    }
   });
 
   if (process.env.ELECTRON_RENDERER_URL) {
@@ -102,15 +149,28 @@ function registerShortcuts(): void {
   }
 }
 
+/**
+ * 16x16 transparent PNG containing a white rounded diamond — used as the tray
+ * glyph on Windows/Linux where we can't fall back to a text title. Encoded
+ * inline so tray always has something recognizable even before we ship real
+ * tray artwork in resources/.
+ */
+const TRAY_FALLBACK_PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnElEQVQ4y62TsQ3CMBBF3wkJRMcCjEAvRsgCzMAAIBqmYIRMkAmIrqRglTSRkJB9biwHWSfOTvzq67777+7sEEnrwAhYAj3QAi0wAS7AAXi0aTc+JMAZqIEWqBAR2IC0iFUFxz9TgVNAnYBlggFMoE5AEaASWCfgCjgKoChxBYvCHVABSwPeFAiAsSmwL9g2GVIFVslx8DWogGfyKj9U8gJHIIHQCqzM6gAAAABJRU5ErkJggg==";
+
 function createTray(): void {
   if (tray) return;
-  const iconPath = path.join(__dirname, "..", "..", "resources", "tray-icon.png");
+  const candidates = [
+    path.join(process.resourcesPath ?? "", "tray-icon.png"),
+    path.join(__dirname, "..", "..", "resources", "tray-icon.png"),
+    path.join(__dirname, "..", "..", "build", "icon.png"),
+  ];
+  const iconPath = candidates.find((p) => fs.existsSync(p));
   let image: Electron.NativeImage;
-  if (fs.existsSync(iconPath)) {
+  if (iconPath) {
     image = nativeImage.createFromPath(iconPath);
   } else {
-    // 1x1 transparent PNG fallback so Tray still initializes (macOS shows text via setTitle)
-    image = nativeImage.createEmpty();
+    image = nativeImage.createFromBuffer(Buffer.from(TRAY_FALLBACK_PNG_BASE64, "base64"));
   }
   try {
     tray = new Tray(image.resize({ width: 16, height: 16 }));
@@ -130,7 +190,8 @@ function createTray(): void {
       },
       {
         label: "Capture region → AI",
-        accelerator: "Cmd+Shift+A",
+        // CommandOrControl resolves to ⌘ on mac, Ctrl on Windows/Linux.
+        accelerator: "CommandOrControl+Shift+A",
         click: async () => {
           const capture = await captureRegion();
           if (capture && mainWindow) {
@@ -218,6 +279,39 @@ function buildAppMenu(): void {
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
+
+// Harden every webContents created in the app. Runs once, covers the main
+// window, the capture overlay, and all <webview> tags.
+app.on("web-contents-created", (_event, contents) => {
+  // Deny node integration and isolate attached <webview> tags so a compromised
+  // page can't escape into Node.
+  contents.on("will-attach-webview", (_e, webPreferences, params) => {
+    delete (webPreferences as Partial<Electron.WebPreferences>).preload;
+    webPreferences.nodeIntegration = false;
+    webPreferences.contextIsolation = true;
+    webPreferences.webSecurity = true;
+    // Only allow http(s) as the webview source.
+    if (params.src && !/^https?:\/\//i.test(params.src)) {
+      params.src = "about:blank";
+    }
+  });
+
+  // Block permission requests by default (geolocation, notifications, etc.)
+  contents.session.setPermissionRequestHandler((_webContents, permission, callback) => {
+    const allowed = new Set(["clipboard-read", "clipboard-sanitized-write", "fullscreen"]);
+    callback(allowed.has(permission));
+  });
+
+  // Route any popup from a webview to our in-app openInApp flow.
+  contents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) {
+      mainWindow?.webContents.send("app:openUrl", url);
+    } else if (url) {
+      void shell.openExternal(url).catch(() => null);
+    }
+    return { action: "deny" };
+  });
+});
 
 app.whenReady().then(() => {
   app.setAppUserModelId("com.prepos.app");

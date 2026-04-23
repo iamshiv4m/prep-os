@@ -47,8 +47,13 @@ export const useFocus = create<FocusStore>((set, get) => ({
 
   refresh: async () => {
     set({ loading: true });
-    const sessions = await window.prepOS.focus.list();
-    set({ sessions, loading: false });
+    try {
+      const sessions = await window.prepOS.focus.list();
+      set({ sessions, loading: false });
+    } catch (err) {
+      console.error("[prepos] focus.refresh failed", err);
+      set({ loading: false });
+    }
   },
 
   start: (plugin) => {
