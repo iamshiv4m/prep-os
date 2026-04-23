@@ -2,6 +2,7 @@ import { Check, CheckCircle2, CheckSquare, Circle, Plus, Trash2, X } from "lucid
 import { useMemo, useRef, useState } from "react";
 import Popover from "./Popover";
 import { useTasks, taskCounts, type StudyTask } from "../store/tasks";
+import { useShell } from "../store/shell";
 import clsx from "../utils/clsx";
 
 const QUICK_TAGS = ["DSA", "Interview", "Revise", "Project", "Read"];
@@ -55,6 +56,7 @@ export default function TasksPopover() {
   const tasks = useTasks((s) => s.tasks);
   const add = useTasks((s) => s.add);
   const clearCompleted = useTasks((s) => s.clearCompleted);
+  const openSignal = useShell((s) => s.tasksOpenNonce);
 
   const [input, setInput] = useState("");
   const [pickedTag, setPickedTag] = useState<string | undefined>(undefined);
@@ -73,6 +75,7 @@ export default function TasksPopover() {
     <Popover
       width={340}
       align="end"
+      openSignal={openSignal}
       trigger={({ open, toggle }) => (
         <button
           onClick={toggle}

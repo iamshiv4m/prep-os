@@ -51,6 +51,7 @@ export default function ShortcutsOverlay({ open, onClose }: Props) {
         items: [
           { keys: [mod, "K"], label: "Open Spotlight search" },
           { keys: [mod, "L"], label: "Toggle Launchpad" },
+          { keys: [mod, "Tab"], label: "Cycle through open apps" },
           { keys: [mod, ","], label: "Open Settings" },
           { keys: [mod, "⇧", "M"], label: "Study Mode picker" },
           { keys: [mod, "/"], label: "Show this shortcuts panel" },
@@ -69,7 +70,11 @@ export default function ShortcutsOverlay({ open, onClose }: Props) {
         items: [
           { keys: [mod, "M"], label: "Minimize focused window" },
           { keys: [mod, "W"], label: "Close focused window" },
-          { keys: [alt, "drag"], label: "Drag a window from anywhere (not impl.)" },
+          { keys: [mod, alt, "←"], label: "Snap window to left half" },
+          { keys: [mod, alt, "→"], label: "Snap window to right half" },
+          { keys: [mod, alt, "↑"], label: "Maximize / zoom window" },
+          { keys: [mod, alt, "↓"], label: "Center window (restore)" },
+          { keys: ["Drag to edge"], label: "Snap to edge half / corner quarter" },
           { keys: ["double-click title"], label: "Zoom / restore window" },
         ],
       },

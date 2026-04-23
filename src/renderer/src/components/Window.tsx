@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useWindows, type WindowState } from "../store/windows";
+import { useWindows, type SnapZone, type WindowState } from "../store/windows";
+import { snapZoneForCursor } from "../utils/snapZone";
 import clsx from "../utils/clsx";
 
 interface WindowProps {
@@ -21,7 +22,11 @@ interface DragState {
   origH: number;
 }
 
-export default function Window({ win, children }: WindowProps) {
+interface WindowComponentProps extends WindowProps {
+  onSnapHover?: (zone: SnapZone | null) => void;
+}
+
+export default function Window({ win, children, onSnapHover }: WindowComponentProps) {
   const focusedId = useWindows((s) => s.focusedId);
   const focus = useWindows((s) => s.focusWindow);
   const close = useWindows((s) => s.closeWindow);
@@ -29,10 +34,12 @@ export default function Window({ win, children }: WindowProps) {
   const toggleMax = useWindows((s) => s.toggleMaximize);
   const move = useWindows((s) => s.moveWindow);
   const resize = useWindows((s) => s.resizeWindow);
+  const snapWindow = useWindows((s) => s.snapWindow);
 
   const focused = focusedId === win.id;
   const dragRef = useRef<DragState | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const pendingSnap = useRef<SnapZone | null>(null);
 
   const onPointerDown = useCallback(
     (mode: "move" | "resize", edge?: ResizeEdge) => (e: React.PointerEvent<HTMLDivElement>) => {
@@ -64,6 +71,11 @@ export default function Window({ win, children }: WindowProps) {
       const dy = e.clientY - d.startY;
       if (d.mode === "move") {
         move(win.id, Math.max(0, d.origX + dx), Math.max(0, d.origY + dy));
+        const zone = snapZoneForCursor(e.clientX, e.clientY);
+        if (zone !== pendingSnap.current) {
+          pendingSnap.current = zone;
+          onSnapHover?.(zone);
+        }
       } else if (d.mode === "resize" && d.edge) {
         let nx = d.origX;
         let ny = d.origY;
@@ -86,6 +98,15 @@ export default function Window({ win, children }: WindowProps) {
       }
     };
     const handleUp = () => {
+      const zone = pendingSnap.current;
+      if (zone) {
+        snapWindow(win.id, zone, {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      }
+      pendingSnap.current = null;
+      onSnapHover?.(null);
       dragRef.current = null;
       setIsDragging(false);
     };
@@ -95,7 +116,7 @@ export default function Window({ win, children }: WindowProps) {
       window.removeEventListener("pointermove", handleMove);
       window.removeEventListener("pointerup", handleUp);
     };
-  }, [isDragging, move, resize, win.id]);
+  }, [isDragging, move, resize, snapWindow, win.id, onSnapHover]);
 
   return (
     <AnimatePresence>
@@ -107,7 +128,7 @@ export default function Window({ win, children }: WindowProps) {
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
           className={clsx(
-            "absolute flex flex-col overflow-hidden rounded-[10px] border backdrop-blur-2xl",
+            "pointer-events-auto absolute flex flex-col overflow-hidden rounded-[10px] border backdrop-blur-2xl",
             focused
               ? "border-white/20 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.7)] ring-1 ring-black/40"
               : "border-white/10 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.55)]",

@@ -8,6 +8,12 @@ interface Props {
   align?: "start" | "end";
   width?: number;
   className?: string;
+  /**
+   * Incrementing signal to open the popover from the outside. Every time this
+   * value changes (and is > 0) the popover opens. Useful for widgets that want
+   * to trigger a menubar popover without owning its state.
+   */
+  openSignal?: number;
 }
 
 export default function Popover({
@@ -16,9 +22,15 @@ export default function Popover({
   align = "end",
   width = 320,
   className,
+  openSignal,
 }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+
+  // Respond to external open signals
+  useEffect(() => {
+    if (openSignal && openSignal > 0) setOpen(true);
+  }, [openSignal]);
 
   useEffect(() => {
     if (!open) return;

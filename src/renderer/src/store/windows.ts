@@ -22,6 +22,15 @@ export interface WindowState {
   restore?: { x: number; y: number; width: number; height: number };
 }
 
+export type SnapZone =
+  | "left"
+  | "right"
+  | "top"
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right";
+
 interface WindowStore {
   windows: WindowState[];
   focusedId: string | null;
@@ -35,6 +44,10 @@ interface WindowStore {
   toggleMaximize: (id: string, viewport: { width: number; height: number }) => void;
   moveWindow: (id: string, x: number, y: number) => void;
   resizeWindow: (id: string, width: number, height: number) => void;
+  /** Snap a window to a zone of the viewport (half/quarter/top). */
+  snapWindow: (id: string, zone: SnapZone, viewport: { width: number; height: number }) => void;
+  /** Center a window at its default size (restore from snap/maximize). */
+  centerWindow: (id: string, viewport: { width: number; height: number }) => void;
   updateAppState: (id: string, patch: Record<string, unknown>) => void;
   setWindowTitle: (id: string, title: string) => void;
 }
@@ -162,6 +175,79 @@ export const useWindows = create<WindowStore>((set, get) => ({
       windows: state.windows.map((w) =>
         w.id === id ? { ...w, width: Math.max(320, width), height: Math.max(240, height) } : w,
       ),
+    }));
+  },
+
+  snapWindow: (id, zone, viewport) => {
+    // Viewport here is the inner workspace (below menubar, above dock).
+    // Menubar is 28px, dock area ~88px, consistent with toggleMaximize above.
+    const MENUBAR = 28;
+    const DOCK_ROOM = 88;
+    const usableW = viewport.width;
+    const usableH = viewport.height - MENUBAR - DOCK_ROOM;
+    const halfW = Math.round(usableW / 2);
+    const halfH = Math.round(usableH / 2);
+
+    let bounds: { x: number; y: number; width: number; height: number } = {
+      x: 0,
+      y: 0,
+      width: usableW,
+      height: usableH,
+    };
+    switch (zone) {
+      case "left":
+        bounds = { x: 0, y: 0, width: halfW, height: usableH };
+        break;
+      case "right":
+        bounds = { x: halfW, y: 0, width: usableW - halfW, height: usableH };
+        break;
+      case "top":
+        bounds = { x: 0, y: 0, width: usableW, height: usableH };
+        break;
+      case "top-left":
+        bounds = { x: 0, y: 0, width: halfW, height: halfH };
+        break;
+      case "top-right":
+        bounds = { x: halfW, y: 0, width: usableW - halfW, height: halfH };
+        break;
+      case "bottom-left":
+        bounds = { x: 0, y: halfH, width: halfW, height: usableH - halfH };
+        break;
+      case "bottom-right":
+        bounds = { x: halfW, y: halfH, width: usableW - halfW, height: usableH - halfH };
+        break;
+    }
+
+    set((state) => ({
+      windows: state.windows.map((w) => {
+        if (w.id !== id) return w;
+        // Preserve original restore bounds on first snap so the user can get back.
+        const restore =
+          w.restore ??
+          (w.maximized ? w.restore : { x: w.x, y: w.y, width: w.width, height: w.height });
+        return {
+          ...w,
+          ...bounds,
+          maximized: false,
+          restore,
+        };
+      }),
+    }));
+  },
+
+  centerWindow: (id, viewport) => {
+    set((state) => ({
+      windows: state.windows.map((w) => {
+        if (w.id !== id) return w;
+        if (w.restore) {
+          return { ...w, ...w.restore, restore: undefined, maximized: false };
+        }
+        const width = Math.min(w.width, Math.round(viewport.width * 0.85));
+        const height = Math.min(w.height, Math.round(viewport.height * 0.8));
+        const x = Math.max(20, Math.round((viewport.width - width) / 2));
+        const y = Math.max(40, Math.round((viewport.height - height) / 2 - 20));
+        return { ...w, x, y, width, height, maximized: false };
+      }),
     }));
   },
 

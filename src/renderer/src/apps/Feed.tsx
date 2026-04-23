@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { FeedCategory, FeedItem, FeedSnapshot, FeedSource } from "@shared/types";
 import { openInApp } from "../utils/openInApp";
 import { useNotifications } from "../store/notifications";
+import { useFeedUnread } from "../hooks/useFeedUnread";
 import clsx from "../utils/clsx";
 
 const ALL = "__all__";
@@ -45,6 +46,12 @@ export default function Feed() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { markSeen } = useFeedUnread();
+
+  useEffect(() => {
+    // Opening Dev News counts as "caught up" — clear the dock/desktop badge.
+    markSeen();
+  }, [markSeen]);
 
   const load = useCallback(async () => {
     try {

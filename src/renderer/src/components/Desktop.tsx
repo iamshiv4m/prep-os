@@ -1,16 +1,14 @@
 import { motion } from "framer-motion";
-import { Lightbulb, RefreshCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Tip } from "@shared/types";
 import { usePlugins } from "../store/plugins";
-import { useShell } from "../store/shell";
 import { useWindows } from "../store/windows";
-
-const HERO_LINES = [
-  "Your interview prep cockpit.",
-  "Capture anything → ask AI.",
-  "All your platforms, one OS.",
-];
+import FocusWidget from "./desktop/FocusWidget";
+import TasksWidget from "./desktop/TasksWidget";
+import PotdWidget from "./desktop/PotdWidget";
+import FeedWidget from "./desktop/FeedWidget";
+import PluginIcon from "./PluginIcon";
+import { Lightbulb, RefreshCcw } from "lucide-react";
 
 const TIP_CATEGORY_LABEL: Record<string, string> = {
   behavioral: "Behavioral",
@@ -22,24 +20,29 @@ const TIP_CATEGORY_LABEL: Record<string, string> = {
   mindset: "Mindset",
 };
 
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 5) return "Still grinding";
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  if (h < 21) return "Good evening";
+  return "Working late";
+}
+
+function todayLabel(): string {
+  return new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default function Desktop() {
   const plugins = usePlugins((s) => s.plugins);
   const openApp = useWindows((s) => s.openApp);
-  const toggleLaunchpad = useShell((s) => s.toggleLaunchpad);
+
   const [tip, setTip] = useState<Tip | null>(null);
   const [allTips, setAllTips] = useState<Tip[] | null>(null);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      // Double tap Cmd+Space is handled by Spotlight already via App-level listener
-      if ((e.metaKey || e.ctrlKey) && e.key === "l") {
-        e.preventDefault();
-        toggleLaunchpad();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [toggleLaunchpad]);
 
   useEffect(() => {
     void (async () => {
@@ -64,73 +67,104 @@ export default function Desktop() {
     }
   };
 
-  const quickStart = plugins.filter((p) =>
-    ["devtools-tech", "leetcode", "ai-chat", "feed", "playground", "notes", "excalidraw"].includes(
-      p.id,
-    ),
+  const quickStart = useMemo(
+    () =>
+      plugins.filter((p) =>
+        [
+          "devtools-tech",
+          "leetcode",
+          "ai-chat",
+          "playground",
+          "notes",
+          "excalidraw",
+          "feed",
+        ].includes(p.id),
+      ),
+    [plugins],
   );
 
   const feedPlugin = useMemo(() => plugins.find((p) => p.id === "feed"), [plugins]);
+  const focusPlugin = useMemo(() => plugins.find((p) => p.id === "devtools-tech"), [plugins]);
 
   return (
     <div className="wallpaper wallpaper-noise relative h-full w-full overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-6 pt-10 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center gap-1"
-        >
-          <div className="text-[64px] font-semibold tracking-tight text-white/95 drop-shadow">
-            PrepOS
-          </div>
-          <div className="max-w-md text-[14px] text-white/60">
-            {HERO_LINES.map((line, i) => (
-              <div key={i} className="leading-snug">
-                {line}
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.5 }}
-          className="pointer-events-auto mt-4 flex flex-wrap items-center justify-center gap-3 px-6"
-        >
-          {quickStart.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => openApp(p)}
-              className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/85 backdrop-blur-md transition hover:border-white/25 hover:bg-white/10"
-            >
-              <span className="text-base">{p.icon}</span>
-              <span>Open {p.name}</span>
-            </button>
-          ))}
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.75 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-6 text-[11px] text-white/55"
-        >
-          <Hint label="⌘ + K" text="Spotlight" />
-          <Hint label="⌘ + L" text="Launchpad" />
-          <Hint label="⌘⇧A" text="Capture region → AI" />
-          <Hint label="⌘ + ," text="Settings" />
-        </motion.div>
-
-        {tip && (
+      <div className="pointer-events-none absolute inset-0 overflow-y-auto">
+        <div className="mx-auto flex max-w-[1100px] flex-col gap-6 px-8 pb-40 pt-16">
+          {/* Hero */}
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-            className="pointer-events-auto mt-6 w-full max-w-xl px-6"
+            transition={{ duration: 0.45 }}
+            className="pointer-events-auto flex flex-col gap-1 text-left"
           >
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left shadow-[0_20px_50px_-20px_rgba(0,0,0,0.6)] backdrop-blur-md">
+            <div className="text-[13px] font-medium uppercase tracking-[0.14em] text-white/45">
+              {todayLabel()}
+            </div>
+            <div className="text-[38px] font-semibold leading-tight tracking-tight text-white/95">
+              {greeting()} — ready to level up?
+            </div>
+            <div className="text-[14px] text-white/55">
+              Your interview cockpit · capture anything → ask AI · all your platforms, one OS.
+            </div>
+          </motion.div>
+
+          {/* Widget grid */}
+          <div className="pointer-events-auto grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <FocusWidget delay={0.05} onOpenFocus={() => focusPlugin && openApp(focusPlugin)} />
+            <PotdWidget delay={0.1} />
+            <TasksWidget delay={0.15} />
+            <FeedWidget delay={0.2} onOpenFeed={() => feedPlugin && openApp(feedPlugin)} />
+          </div>
+
+          {/* Quick Start */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.28, duration: 0.45 }}
+            className="pointer-events-auto flex flex-col gap-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="text-[10.5px] font-semibold uppercase tracking-[0.13em] text-white/45">
+                Quick Start
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-white/45">
+                <Hint label="⌘K" text="Spotlight" />
+                <Hint label="⌘L" text="Launchpad" />
+                <Hint label="⌘/" text="Shortcuts" />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-start gap-3">
+              {quickStart.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => openApp(p)}
+                  className="group flex w-[84px] flex-col items-center gap-1.5 focus:outline-none"
+                >
+                  <div className="transition-transform group-hover:-translate-y-0.5 group-hover:scale-[1.05]">
+                    <PluginIcon plugin={p} size={56} />
+                  </div>
+                  <span className="max-w-full truncate text-[11.5px] text-white/80 group-hover:text-white">
+                    {p.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Tip of the day — click anywhere on the card for next tip */}
+          {tip && (
+            <motion.button
+              type="button"
+              onClick={() => void shuffle()}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.5 }}
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.99 }}
+              className="group pointer-events-auto w-full rounded-2xl border border-white/10 bg-white/[0.035] p-4 text-left backdrop-blur-md transition-colors hover:border-white/20 hover:bg-white/[0.055] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/25"
+              style={{ boxShadow: "0 20px 50px -20px rgba(0,0,0,0.6)" }}
+              aria-label="Next tip"
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-amber-200/80">
                   <Lightbulb className="h-3 w-3" />
@@ -139,32 +173,15 @@ export default function Desktop() {
                     {TIP_CATEGORY_LABEL[tip.category] ?? tip.category}
                   </span>
                 </div>
-                <button
-                  onClick={shuffle}
-                  title="Next tip"
-                  className="flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60 transition-colors hover:bg-white/10 hover:text-white"
-                >
+                <span className="flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-1.5 py-0.5 text-[10px] text-white/60 transition-colors group-hover:border-white/25 group-hover:bg-white/10 group-hover:text-white">
                   <RefreshCcw className="h-3 w-3" /> Next
-                </button>
+                </span>
               </div>
               <div className="mt-2 text-[14px] font-semibold text-white/95">{tip.title}</div>
               <div className="mt-1 text-[12px] leading-relaxed text-white/70">{tip.body}</div>
-              {feedPlugin && (
-                <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-3">
-                  <span className="text-[11px] text-white/45">
-                    Want the latest from across the web?
-                  </span>
-                  <button
-                    onClick={() => openApp(feedPlugin)}
-                    className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-white/80 hover:bg-white/10 hover:text-white"
-                  >
-                    Open {feedPlugin.name}
-                  </button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
+            </motion.button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -173,7 +190,7 @@ export default function Desktop() {
 function Hint({ label, text }: { label: string; text: string }) {
   return (
     <div className="flex items-center gap-1">
-      <kbd className="rounded border border-white/15 bg-white/10 px-1.5 py-0.5 text-[10px] font-medium tracking-wide">
+      <kbd className="rounded border border-white/15 bg-white/10 px-1.5 py-[1px] text-[10px] font-medium tracking-wide">
         {label}
       </kbd>
       <span>{text}</span>

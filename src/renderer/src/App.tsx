@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import AppSwitcher from "./components/AppSwitcher";
 import Desktop from "./components/Desktop";
 import Dock from "./components/Dock";
 import FocusPicker from "./components/FocusPicker";
@@ -6,6 +7,7 @@ import Launchpad from "./components/Launchpad";
 import Menubar from "./components/Menubar";
 import ModePicker from "./components/ModePicker";
 import ShortcutsOverlay from "./components/ShortcutsOverlay";
+import SnapPreview from "./components/SnapPreview";
 import Spotlight from "./components/Spotlight";
 import Window from "./components/Window";
 import AppRouter from "./apps/AppRouter";
@@ -13,7 +15,7 @@ import { useFocus } from "./store/focus";
 import { useLockdown } from "./store/lockdown";
 import { usePlugins } from "./store/plugins";
 import { useShell } from "./store/shell";
-import { useWindows } from "./store/windows";
+import { useWindows, type SnapZone } from "./store/windows";
 import { openInApp } from "./utils/openInApp";
 
 export default function App() {
@@ -23,6 +25,11 @@ export default function App() {
   const focusedId = useWindows((s) => s.focusedId);
   const openApp = useWindows((s) => s.openApp);
   const updateAppState = useWindows((s) => s.updateAppState);
+  const snapWindow = useWindows((s) => s.snapWindow);
+  const centerWindow = useWindows((s) => s.centerWindow);
+  const toggleMaximize = useWindows((s) => s.toggleMaximize);
+  const minimizeWindow = useWindows((s) => s.minimizeWindow);
+  const [snapHoverZone, setSnapHoverZone] = useState<SnapZone | null>(null);
   const toggleSpotlight = useShell((s) => s.toggleSpotlight);
   const setSpotlight = useShell((s) => s.setSpotlight);
   const toggleLaunchpad = useShell((s) => s.toggleLaunchpad);
@@ -119,6 +126,41 @@ export default function App() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
+      const alt = e.altKey;
+      const viewport = { width: window.innerWidth, height: window.innerHeight };
+
+      // Window snap: ⌘⌥ + arrows (Mac/Windows parity)
+      if (
+        mod &&
+        alt &&
+        (e.key === "ArrowLeft" ||
+          e.key === "ArrowRight" ||
+          e.key === "ArrowUp" ||
+          e.key === "ArrowDown")
+      ) {
+        e.preventDefault();
+        if (!focusedId) return;
+        if (e.key === "ArrowLeft") snapWindow(focusedId, "left", viewport);
+        else if (e.key === "ArrowRight") snapWindow(focusedId, "right", viewport);
+        else if (e.key === "ArrowUp") toggleMaximize(focusedId, viewport);
+        else if (e.key === "ArrowDown") centerWindow(focusedId, viewport);
+        return;
+      }
+
+      // Close focused window: ⌘W
+      if (mod && !e.shiftKey && e.key.toLowerCase() === "w" && focusedId) {
+        e.preventDefault();
+        useWindows.getState().closeWindow(focusedId);
+        return;
+      }
+
+      // Minimize focused window: ⌘M
+      if (mod && !e.shiftKey && e.key.toLowerCase() === "m" && focusedId) {
+        e.preventDefault();
+        minimizeWindow(focusedId);
+        return;
+      }
+
       if (mod && e.shiftKey && e.key.toLowerCase() === "l") {
         e.preventDefault();
         if (lockdownActive) void disableLockdown();
@@ -151,7 +193,12 @@ export default function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, [
     plugins,
+    focusedId,
     openApp,
+    snapWindow,
+    centerWindow,
+    toggleMaximize,
+    minimizeWindow,
     toggleSpotlight,
     toggleLaunchpad,
     toggleModePicker,
@@ -167,18 +214,20 @@ export default function App() {
     <div className="relative h-screen w-screen overflow-hidden">
       <Desktop />
       <Menubar />
-      <div className="absolute inset-x-0 bottom-0 top-7 z-[100]">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-7 z-[100]">
         {windows.map((win) => (
-          <Window key={win.id} win={win}>
+          <Window key={win.id} win={win} onSnapHover={setSnapHoverZone}>
             <AppRouter win={win} />
           </Window>
         ))}
       </div>
+      <SnapPreview zone={snapHoverZone} />
       <Dock />
       <Launchpad />
       <Spotlight />
       <FocusPicker />
       <ModePicker />
+      <AppSwitcher />
       <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcuts(false)} />
     </div>
   );
