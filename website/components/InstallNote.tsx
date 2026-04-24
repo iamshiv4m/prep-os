@@ -1,4 +1,4 @@
-import { ShieldCheck, Terminal } from "lucide-react";
+import { ShieldCheck, Terminal, Apple, Monitor, Container } from "lucide-react";
 
 export default function InstallNote() {
   return (
@@ -9,77 +9,89 @@ export default function InstallNote() {
             <ShieldCheck className="h-3 w-3" /> First-launch help
           </div>
           <h2 className="text-balance text-[32px] font-semibold tracking-[-0.015em] text-white sm:text-[40px]">
-            One-time OS warning. <span className="text-white/55">Here's how to bypass.</span>
+            One-time OS warning. <span className="text-white/55">Here&apos;s how to bypass.</span>
           </h2>
           <p className="max-w-2xl text-[14.5px] leading-relaxed text-white/60">
-            PrepOS is currently shipped without paid Apple notarization or Windows EV signing — so
-            the OS will warn you on first launch. The app is open-source, you can read every line on
-            GitHub. Use the steps below to get past the dialog. After the first launch, the OS
-            remembers your choice forever.
+            PrepOS ships without paid Apple notarization or Windows EV signing — so your OS will
+            warn you on first launch. The app is fully open-source, you can read every line on
+            GitHub. Follow the steps below once, and the OS remembers your choice forever.
           </p>
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-3">
           <Card
-            title="macOS — Gatekeeper"
+            icon={<Apple className="h-4 w-4" />}
+            title="macOS"
+            platform="Gatekeeper"
             subtitle="“Apple cannot check it for malicious software.”"
           >
-            <ol className="space-y-2.5 text-[13.5px] text-white/80">
+            <ol className="space-y-3 text-[13.5px] text-white/80">
               <Step n={1}>
-                Right-click <code className="kbd">PrepOS.app</code> → <b>Open</b> → <b>Open</b>{" "}
-                again in the dialog.
+                Right-click <Kbd>PrepOS.app</Kbd> → <b>Open</b>, then confirm <b>Open</b> in the
+                dialog.
               </Step>
               <Step n={2}>
                 Or open <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>
                 .
               </Step>
               <Step n={3}>
-                If macOS still blocks, run in Terminal:
-                <pre className="mt-2 overflow-x-auto rounded-md border border-white/10 bg-black/40 p-2.5 font-mono text-[11.5px] text-white/85">
-                  <code>xattr -dr com.apple.quarantine /Applications/PrepOS.app</code>
-                </pre>
+                Still blocked? Run this in Terminal:
+                <CodeBlock>
+                  xattr -dr com.apple.quarantine{"\n"}
+                  /Applications/PrepOS.app
+                </CodeBlock>
               </Step>
             </ol>
           </Card>
 
-          <Card title="Windows — SmartScreen" subtitle="“Windows protected your PC.”">
-            <ol className="space-y-2.5 text-[13.5px] text-white/80">
+          <Card
+            icon={<Monitor className="h-4 w-4" />}
+            title="Windows"
+            platform="SmartScreen"
+            subtitle="“Windows protected your PC.”"
+          >
+            <ol className="space-y-3 text-[13.5px] text-white/80">
               <Step n={1}>
                 Click <b>More info</b> in the blue dialog → <b>Run anyway</b>.
               </Step>
               <Step n={2}>
-                If silently blocked, right-click installer → <b>Properties</b> → check{" "}
-                <b>Unblock</b> at the bottom → <b>OK</b>.
+                If silently blocked, right-click the installer → <b>Properties</b> → check{" "}
+                <b>Unblock</b> → <b>OK</b>.
               </Step>
-              <Step n={3}>Run installer again. SmartScreen remembers from now on.</Step>
+              <Step n={3}>Run the installer again. SmartScreen remembers from now on.</Step>
             </ol>
           </Card>
 
-          <Card title="Linux — AppImage" subtitle="One step, then run forever.">
-            <ol className="space-y-2.5 text-[13.5px] text-white/80">
+          <Card
+            icon={<Container className="h-4 w-4" />}
+            title="Linux"
+            platform="AppImage"
+            subtitle="One step, then run forever."
+          >
+            <ol className="space-y-3 text-[13.5px] text-white/80">
               <Step n={1}>
                 Right-click the AppImage → <b>Properties → Permissions</b> → check{" "}
                 <b>Allow executing as program</b>.
               </Step>
               <Step n={2}>
                 Or via terminal:
-                <pre className="mt-2 overflow-x-auto rounded-md border border-white/10 bg-black/40 p-2.5 font-mono text-[11.5px] text-white/85">
-                  <code>chmod +x PrepOS-*.AppImage{"\n"}./PrepOS-*.AppImage</code>
-                </pre>
+                <CodeBlock>
+                  chmod +x PrepOS-*.AppImage{"\n"}
+                  ./PrepOS-*.AppImage
+                </CodeBlock>
               </Step>
-              <Step n={3}>
-                On first launch it integrates itself into your launcher / dock automatically.
-              </Step>
+              <Step n={3}>On first launch it auto-integrates into your launcher / dock.</Step>
             </ol>
           </Card>
         </div>
 
-        <div className="border-white/8 mt-12 flex flex-col items-start gap-2 rounded-2xl border bg-white/[0.025] p-5 sm:flex-row sm:items-center">
-          <Terminal className="h-4 w-4 text-violet-300" />
-          <p className="text-[13px] text-white/65">
-            Prefer to build from source?{" "}
-            <code className="kbd">npm install &amp;&amp; npm run dev</code> from the repo root —
-            full instructions in the README.
+        <div className="mt-12 flex flex-col items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.025] p-5 sm:flex-row sm:items-center sm:gap-4">
+          <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-500/10">
+            <Terminal className="h-4 w-4 text-violet-300" />
+          </div>
+          <p className="text-[13px] leading-relaxed text-white/65">
+            Prefer to build from source? Run <Kbd>npm install &amp;&amp; npm run dev</Kbd> from the
+            repo root — full instructions in the README.
           </p>
         </div>
       </div>
@@ -88,18 +100,29 @@ export default function InstallNote() {
 }
 
 function Card({
+  icon,
   title,
+  platform,
   subtitle,
   children,
 }: {
+  icon: React.ReactNode;
   title: string;
+  platform: string;
   subtitle: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col rounded-2xl border border-white/10 bg-white/[0.025] p-6">
-      <div className="text-[11px] uppercase tracking-[0.15em] text-white/45">{subtitle}</div>
-      <h3 className="mt-2 text-[18px] font-semibold text-white">{title}</h3>
+    <div className="flex min-w-0 flex-col rounded-2xl border border-white/10 bg-white/[0.025] p-6">
+      <div className="flex items-center gap-2">
+        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80">
+          {icon}
+        </span>
+        <h3 className="text-[17px] font-semibold text-white">
+          {title} <span className="text-white/45">— {platform}</span>
+        </h3>
+      </div>
+      <p className="mt-3 min-h-[32px] text-[12px] italic leading-snug text-white/45">{subtitle}</p>
       <div className="mt-4 flex-1">{children}</div>
     </div>
   );
@@ -107,11 +130,23 @@ function Card({
 
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
-    <li className="flex gap-2.5">
+    <li className="flex min-w-0 gap-2.5">
       <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/5 text-[10.5px] font-semibold text-white/80">
         {n}
       </span>
-      <span className="leading-relaxed">{children}</span>
+      <span className="min-w-0 flex-1 leading-relaxed">{children}</span>
     </li>
+  );
+}
+
+function Kbd({ children }: { children: React.ReactNode }) {
+  return <code className="kbd whitespace-nowrap">{children}</code>;
+}
+
+function CodeBlock({ children }: { children: React.ReactNode }) {
+  return (
+    <pre className="mt-2 w-full overflow-x-auto rounded-md border border-white/10 bg-black/40 p-2.5 font-mono text-[11.5px] leading-relaxed text-white/85">
+      <code className="whitespace-pre">{children}</code>
+    </pre>
   );
 }
