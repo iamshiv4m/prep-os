@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { APP, REPO_URL } from "@/lib/constants";
 import "./globals.css";
 
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={inter.variable}>
       <body className="relative min-h-screen overflow-x-hidden font-sans antialiased">
         <div className="relative z-10">{children}</div>
+        <Analytics />
       </body>
     </html>
   );
