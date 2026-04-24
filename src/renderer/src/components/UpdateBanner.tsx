@@ -80,8 +80,8 @@ export default function UpdateBanner() {
                 </button>
               </div>
               <div className="mt-0.5 text-[11px] text-white/50">
-                You're on {payload.current}. Updates ship via the website — one click and you're
-                done.
+                You&apos;re on {payload.current}. Updates ship via the website — one click and
+                you&apos;re done.
               </div>
 
               {payload.notes && (

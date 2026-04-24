@@ -254,6 +254,30 @@ const BUILT_IN_PLUGINS: PluginManifest[] = [
     window: { defaultSize: { w: 980, h: 720 }, resizable: true },
     permissions: ["network"],
   },
+  {
+    id: "contests",
+    name: "Contests",
+    icon: "🏆",
+    version: "1.0.0",
+    type: "native",
+    entry: "contests",
+    builtIn: true,
+    description: "Upcoming LeetCode + Codeforces contests",
+    window: { defaultSize: { w: 1000, h: 720 } },
+    permissions: ["network", "storage"],
+  },
+  {
+    id: "system-design",
+    name: "System Design",
+    icon: "🏛️",
+    version: "1.0.0",
+    type: "native",
+    entry: "system-design",
+    builtIn: true,
+    description: "Classic system design questions + scaffolds",
+    window: { defaultSize: { w: 1100, h: 780 } },
+    permissions: ["storage"],
+  },
 ];
 
 export function listPlugins(): PluginManifest[] {

@@ -75,7 +75,7 @@ export default function FeedWidget({
         </ul>
       )}
       <div className="mt-auto flex items-center justify-between pt-3 text-[11px] text-white/40">
-        <span>Hacker News · Dev.to · Smashing</span>
+        <span>HN · GfG · Striver · freeCodeCamp</span>
         <span className="flex items-center gap-1 rounded-md border border-rose-400/25 bg-rose-500/10 px-2 py-1 text-rose-100 transition-colors group-hover:border-rose-400/50 group-hover:bg-rose-500/20">
           Open <ArrowUpRight className="h-3 w-3" />
         </span>

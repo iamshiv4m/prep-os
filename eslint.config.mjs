@@ -19,6 +19,11 @@ export default tseslint.config(
       "**/*.d.ts",
       "postcss.config.js",
       "tailwind.config.js",
+      // The marketing website is a self-contained Next.js project with its own
+      // ESLint config + scripts. Lint it from inside `website/` to avoid pulling
+      // its `.next/` build output into the root run (which would surface
+      // thousands of generated-file errors).
+      "website/**",
     ],
   },
 

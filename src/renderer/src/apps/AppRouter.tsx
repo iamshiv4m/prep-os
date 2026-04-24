@@ -3,11 +3,13 @@ import type { Capture } from "@shared/types";
 import { usePlugins } from "../store/plugins";
 import { useWindows, type WindowState } from "../store/windows";
 import AIChat from "./AIChat";
+import Contests from "./Contests";
 import Feed from "./Feed";
 import Notes from "./Notes";
 import Playground from "./Playground";
 import Reader from "./Reader";
 import Settings from "./Settings";
+import SystemDesign from "./SystemDesign";
 import WebviewHost from "./WebviewHost";
 
 interface Props {
@@ -49,6 +51,10 @@ export default function AppRouter({ win }: Props) {
       return <Playground />;
     case "feed":
       return <Feed />;
+    case "contests":
+      return <Contests />;
+    case "system-design":
+      return <SystemDesign />;
     case "reader":
       return <Reader win={win} />;
     case "settings":

@@ -142,6 +142,10 @@ const api: ElectronAPI = {
     list: () => ipcRenderer.invoke("feed:list"),
     refresh: () => ipcRenderer.invoke("feed:refresh"),
   },
+  contests: {
+    list: () => ipcRenderer.invoke("contests:list"),
+    refresh: () => ipcRenderer.invoke("contests:refresh"),
+  },
   openExternal: (url: string) => ipcRenderer.invoke("shell:openExternal", url),
   onOpenUrl: (cb: (url: string) => void) => {
     openUrlListeners.add(cb);

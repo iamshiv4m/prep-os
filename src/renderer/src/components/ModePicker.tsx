@@ -104,7 +104,7 @@ export default function ModePicker() {
             exit={{ scale: 0.97, y: 6, opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
             onClick={(e) => e.stopPropagation()}
-            className="border-white/12 relative w-[760px] max-w-[92vw] overflow-hidden rounded-2xl border bg-neutral-950/95 shadow-[0_30px_80px_-18px_rgba(0,0,0,0.85)] backdrop-blur-2xl"
+            className="relative w-[760px] max-w-[92vw] overflow-hidden rounded-2xl border border-white/15 bg-neutral-950/95 shadow-[0_30px_80px_-18px_rgba(0,0,0,0.85)] backdrop-blur-2xl"
           >
             <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
               <div className="flex items-center gap-2">

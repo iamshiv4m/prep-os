@@ -50,8 +50,8 @@ export default function Downloads({ release }: Props) {
                 <a
                   href={release.htmlUrl}
                   target="_blank"
-                  rel="noreferrer"
-                  className="font-mono text-violet-300 underline-offset-4 hover:underline"
+                  rel="noopener noreferrer"
+                  className="font-mono text-violet-300 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
                 >
                   {release.tag}
                 </a>{" "}
@@ -66,8 +66,8 @@ export default function Downloads({ release }: Props) {
           <a
             href={RELEASES_URL}
             target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12.5px] text-white/80 transition-colors hover:border-white/20 hover:bg-white/[0.08]"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[12.5px] text-white/80 transition-colors hover:border-white/20 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
           >
             <GithubIcon className="h-3.5 w-3.5" /> All releases
           </a>
@@ -131,8 +131,8 @@ export default function Downloads({ release }: Props) {
                     <a
                       href={LATEST_RELEASE_URL}
                       target="_blank"
-                      rel="noreferrer"
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[12px] text-white/85 hover:bg-white/10"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/[0.05] px-3 py-1.5 text-[12px] text-white/85 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
                     >
                       Open releases page <ArrowRight className="h-3 w-3" />
                     </a>

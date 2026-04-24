@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { GraduationCap, Sparkles } from "lucide-react";
 import type { LatestRelease } from "@/lib/releases";
 import PrimaryDownload from "./PrimaryDownload";
 import AppMockup from "./AppMockup";
@@ -20,9 +20,15 @@ export default function Hero({ release }: Props) {
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-10 px-6 pb-20 pt-16 lg:grid-cols-[1fr_1.05fr] lg:gap-12 lg:pb-28 lg:pt-24">
         <div className="flex flex-col justify-center">
-          <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-white/65">
-            <Sparkles className="h-3 w-3 text-violet-300" />
-            <span>{version} — desktop app for engineers</span>
+          <div className="flex flex-wrap items-center gap-2 self-start">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-white/65">
+              <Sparkles aria-hidden className="h-3 w-3 text-violet-300" />
+              <span>{version} — desktop app for engineers</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/25 bg-violet-500/10 px-2.5 py-1 text-[11px] uppercase tracking-[0.14em] text-violet-100/85">
+              <GraduationCap aria-hidden className="h-3 w-3" />
+              <span>Built for college + working pros</span>
+            </div>
           </div>
 
           <h1 className="mt-5 text-balance text-[44px] font-semibold leading-[1.05] tracking-[-0.02em] text-white sm:text-[56px] lg:text-[64px]">
@@ -43,15 +49,17 @@ export default function Hero({ release }: Props) {
             <PrimaryDownload release={release} />
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12.5px] text-white/45">
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12.5px] text-white/65">
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Free, no signup
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Free, no
+              signup
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-violet-400" /> Works offline
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-violet-400" /> Works offline
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Local-first storage
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Local-first
+              storage
             </span>
           </div>
         </div>

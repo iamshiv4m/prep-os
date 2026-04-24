@@ -278,7 +278,7 @@ export default function AIChat({ seedCapture, onConsumeCapture }: Props) {
                     "max-w-[78%] rounded-2xl px-4 py-2.5 text-[13px] leading-relaxed shadow-sm " +
                     (m.role === "user"
                       ? "bg-blue-600/90 text-white"
-                      : "bg-white/8 text-white/92 border border-white/10")
+                      : "border border-white/10 bg-white/10 text-white/90")
                   }
                 >
                   {m.imageDataUrl && (

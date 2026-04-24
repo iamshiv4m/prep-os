@@ -9,9 +9,18 @@ import clsx from "../utils/clsx";
 
 const ALL = "__all__";
 
-const CATEGORY_ORDER: FeedCategory[] = ["frontend", "backend", "system-design", "general"];
+// "career" sits at the top because it's the most-clicked bucket for students
+// in placement season — keep their muscle-memory fast.
+const CATEGORY_ORDER: FeedCategory[] = [
+  "career",
+  "frontend",
+  "backend",
+  "system-design",
+  "general",
+];
 
 const CATEGORY_LABELS: Record<FeedCategory, string> = {
+  career: "Interview / Career",
   frontend: "Frontend",
   backend: "Backend",
   "system-design": "System Design",

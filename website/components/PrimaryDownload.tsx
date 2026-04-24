@@ -58,17 +58,21 @@ export default function PrimaryDownload({ release }: Props) {
     >
       <a
         href={href}
-        className="group inline-flex items-center gap-2.5 rounded-xl bg-white px-5 py-3 text-[14px] font-semibold text-black shadow-[0_20px_50px_-15px_rgba(255,255,255,0.5)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        aria-label={mounted ? LABEL[platform] : "Download PrepOS"}
+        className="group inline-flex items-center gap-2.5 rounded-xl bg-white px-5 py-3 text-[14px] font-semibold text-black shadow-[0_20px_50px_-15px_rgba(255,255,255,0.5)] transition-transform hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--color-canvas)]"
       >
         {mounted ? PLATFORM_ICON[platform] : <Download className="h-4 w-4" />}
         <span>{mounted ? LABEL[platform] : "Download PrepOS"}</span>
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
       </a>
-      <a href="#download" className="text-[13px] text-white/60 transition-colors hover:text-white">
+      <a
+        href="#download"
+        className="text-[13px] text-white/65 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
+      >
         Other platforms →
       </a>
       {asset && (
-        <span className="text-[12px] text-white/40">
+        <span className="text-[12px] text-white/55">
           {asset.ext.toUpperCase()} · {formatBytes(asset.size)}
           {asset.arch ? ` · ${asset.arch}` : ""}
         </span>

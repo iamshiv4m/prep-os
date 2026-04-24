@@ -10,7 +10,7 @@ PrepOS looks like a mini operating system inside one Electron window: desktop, d
 
 ## Download
 
-Grab the latest build for your OS from the **[releases page](https://github.com/iamshiv4m/prep-os/releases/latest)** or visit **[prepos.app](https://prepos.app)** for an OS-aware download experience.
+Grab the latest build for your OS from the **[releases page](https://github.com/iamshiv4m/prep-os/releases/latest)** or visit **[prep-os.queztlabs.tech](https://prep-os.queztlabs.tech)** for an OS-aware download experience.
 
 | OS      | File                                                                      |
 | ------- | ------------------------------------------------------------------------- |
@@ -30,7 +30,7 @@ Grab the latest build for your OS from the **[releases page](https://github.com/
 - **Native apps** — AI Chat, Markdown Notes, Monaco code Playground, Feed reader, Settings.
 - **Focus mode** — start a timed session on any plugin. Opt into **Hard focus** to block `Cmd+Q` until the session ends.
 - **Daily tip** — curated interview tip on the desktop, rotating daily.
-- **Tech feed** — a daily.dev-style reader pulling Hacker News, Dev.to, freeCodeCamp, Smashing Magazine, CSS-Tricks, and GitHub Trending.
+- **Tech feed** — a daily.dev-style reader pulling Hacker News, Dev.to, GitHub Trending, freeCodeCamp, ByteByteGo, plus India placement-prep staples (GeeksforGeeks, Striver / takeUforward via YouTube, NeetCode via YouTube, InterviewBit). Grouped by **Interview / Career**, **Frontend**, **Backend**, **System Design**, and **General**.
 - **Spotlight** — `Cmd+K` fuzzy command palette for apps and actions.
 - **Secure storage** — API keys encrypted via Electron `safeStorage` (macOS Keychain backed).
 

@@ -7,9 +7,10 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "logo": "node scripts/render-logo.mjs"
+    "logo": "node scripts/render-logo.mjs",
+    "og": "node scripts/render-og.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

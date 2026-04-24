@@ -6,6 +6,54 @@ follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **First-run persona picker** — on first launch, choose between **College
+  student**, **Working professional**, or **Custom** to pre-load a study mode
+  and matching feeds. Re-trigger anytime from Settings → Personalize.
+- **India / Career feed pack** — added GeeksforGeeks, **Striver (takeUforward
+  YouTube)**, **NeetCode (YouTube)**, InterviewBit, freeCodeCamp, and GitHub
+  Trending to the Dev News reader. They join a new **"Interview / Career"**
+  category sitting at the top of the Feed sidebar. Marketing copy in the
+  README, website, and IPC reference now matches the actual `FEED_SOURCES` in
+  `src/main/feed.ts`.
+- **Contest Calendar app + desktop widget** — new built-in `Contests` native
+  app and desktop `ContestsWidget` showing upcoming **LeetCode Weekly /
+  Biweekly** and **Codeforces** rounds with live countdowns. Data refreshes
+  every 30 minutes and degrades gracefully (a failed platform falls back to
+  cached entries instead of disappearing). New IPC surface
+  `prepOS.contests.{list, refresh}`.
+- **System Design native app** — built-in question library covering 18 classic
+  problems (URL Shortener, Twitter/Threads timeline, Uber matching, Netflix
+  streaming, Stock Exchange, Recommendation System, etc.) with structured
+  problem statements, functional + non-functional requirements, hints, and
+  vetted external references. Each question has **Open Excalidraw** and
+  **Discuss with AI** entry points.
+- **Settings → About now ships feedback links** — Report a bug, GitHub
+  Discussions, "What's new" releases page, and a direct email — plus an
+  explicit "no telemetry" callout.
+- **`docs/launch-posts.md`** — copy-paste-ready Twitter, Hacker News (Show
+  HN), Reddit, Dev.to, LinkedIn, and Discord launch posts for 0.1.0.
+
+### Fixed
+
+- README, website Features, and IPC reference previously claimed feed sources
+  (freeCodeCamp, GitHub Trending) that were not yet wired up — claims now match
+  reality, with India staples added on top.
+- **GitHub Trending source is now resilient to mirror outages.** Primary path
+  is still the community RSS mirror (`mshibanami.github.io`), but on failure
+  we now fall back to scraping `github.com/trending` HTML directly so the
+  source never silently empties when the mirror is rebuilding.
+
+### Marketing / SEO
+
+- Full website SEO pass: rich `metadata` with OpenGraph + Twitter cards in
+  `app/layout.tsx`, generated 1200×630 `og.png` via `npm run og`, dual JSON-LD
+  (`SoftwareApplication` + `Organization`), `app/sitemap.ts`, `app/robots.ts`,
+  AVIF + WebP image formats, `<noscript>` fallback, and an a11y polish pass
+  across Hero / Nav / Features / Footer / Downloads. Full audit lives at
+  `docs/website-seo-audit.md`.
+
 ## [0.1.0] - 2026-04
 
 Initial public release. PrepOS is a desktop OS-style productivity shell for

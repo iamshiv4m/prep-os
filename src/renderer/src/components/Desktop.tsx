@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Tip } from "@shared/types";
 import { usePlugins } from "../store/plugins";
 import { useWindows } from "../store/windows";
+import ContestsWidget from "./desktop/ContestsWidget";
 import FocusWidget from "./desktop/FocusWidget";
 import TasksWidget from "./desktop/TasksWidget";
 import PotdWidget from "./desktop/PotdWidget";
@@ -78,6 +79,7 @@ export default function Desktop() {
           "notes",
           "excalidraw",
           "feed",
+          "contests",
         ].includes(p.id),
       ),
     [plugins],
@@ -85,6 +87,7 @@ export default function Desktop() {
 
   const feedPlugin = useMemo(() => plugins.find((p) => p.id === "feed"), [plugins]);
   const focusPlugin = useMemo(() => plugins.find((p) => p.id === "devtools-tech"), [plugins]);
+  const contestsPlugin = useMemo(() => plugins.find((p) => p.id === "contests"), [plugins]);
 
   return (
     <div className="wallpaper wallpaper-noise relative h-full w-full overflow-hidden">
@@ -108,12 +111,16 @@ export default function Desktop() {
             </div>
           </motion.div>
 
-          {/* Widget grid */}
-          <div className="pointer-events-auto grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {/* Widget grid — 5 widgets fit one-row on xl, two-up on md, single column on phones. */}
+          <div className="pointer-events-auto grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
             <FocusWidget delay={0.05} onOpenFocus={() => focusPlugin && openApp(focusPlugin)} />
             <PotdWidget delay={0.1} />
             <TasksWidget delay={0.15} />
             <FeedWidget delay={0.2} onOpenFeed={() => feedPlugin && openApp(feedPlugin)} />
+            <ContestsWidget
+              delay={0.25}
+              onOpenContests={() => contestsPlugin && openApp(contestsPlugin)}
+            />
           </div>
 
           {/* Quick Start */}

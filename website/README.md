@@ -45,10 +45,16 @@ a redeploy.
 
 ### Custom domain
 
-1. Buy `prepos.app` (or similar) on Namecheap / Cloudflare (~₹1,000/year).
+The site is currently deployed at **`prep-os.queztlabs.tech`** (subdomain of the
+QueztLabs main domain). To move to a top-level apex like `prepos.app`:
+
+1. Buy the domain on Namecheap / Cloudflare (~₹1,000/year).
 2. In Vercel → Project → **Settings → Domains** → add the domain. Vercel hands you
    the DNS records; paste them at your registrar.
 3. SSL provisions automatically.
+4. Update `SITE_URL` in [`website/lib/constants.ts`](./lib/constants.ts) — that's
+   the single source of truth wired into `metadataBase`, JSON-LD, OG image footer,
+   sitemap, and robots — then re-run `npm run og` to regenerate the OG card.
 
 ## Releasing the desktop app (auto-uploads to website downloads)
 

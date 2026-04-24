@@ -20,7 +20,7 @@ Instead, report it privately:
 
 1. **GitHub private advisory** (preferred): go to the repo's
    **Security → Advisories → "Report a vulnerability"** button.
-2. **Email**: `hello@prepos.app`. PGP key on request.
+2. **Email**: `shivamjha190@gmail.com`. PGP key on request.
 
 Please include:
 

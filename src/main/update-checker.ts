@@ -19,10 +19,12 @@ const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/release
 /**
  * Where to send the user when an update is available. If the marketing
  * website env var is set at build time we prefer it (branded download page
- * with OS-aware CTAs); otherwise we fall back to the release's own
- * `html_url` from the API response, which is always guaranteed to exist.
+ * with OS-aware CTAs); otherwise we fall back to the production deployment
+ * at queztlabs, and finally to the release's own `html_url` from the API
+ * response (always guaranteed to exist).
  */
-const WEBSITE_DOWNLOAD_URL = process.env.PREPOS_WEBSITE_URL || "";
+const DEFAULT_WEBSITE_URL = "https://prep-os.queztlabs.tech#download";
+const WEBSITE_DOWNLOAD_URL = process.env.PREPOS_WEBSITE_URL || DEFAULT_WEBSITE_URL;
 
 type GitHubRelease = {
   tag_name: string;

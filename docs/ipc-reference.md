@@ -146,7 +146,7 @@ Deterministic daily pick. Data lives in [`src/shared/tips.ts`](../src/shared/tip
 | `feed.list()`    | —         | `Promise<FeedSnapshot>` |
 | `feed.refresh()` | —         | `Promise<FeedSnapshot>` |
 
-`feed.list()` returns the in-memory cache if it's fresher than 20 min, otherwise refetches. `feed.refresh()` always refetches. See [`src/main/feed.ts`](../src/main/feed.ts) for the fetcher, RSS/Atom parser, and source list (HN, Dev.to, freeCodeCamp, Smashing, CSS-Tricks, GitHub Trending).
+`feed.list()` returns the in-memory cache if it's fresher than 20 min, otherwise refetches. `feed.refresh()` always refetches. See [`src/main/feed.ts`](../src/main/feed.ts) for the fetcher, RSS/Atom parser, and full source list (HN, Dev.to, GitHub Trending, freeCodeCamp, GeeksforGeeks, takeUforward, InterviewBit, ByteByteGo, High Scalability, Netflix TechBlog, Cloudflare, web.dev, React, Vercel, Smashing, CSS-Tricks, Josh Comeau, Martin Fowler, GitHub Blog, InfoQ, Changelog).
 
 ### `shell`
 

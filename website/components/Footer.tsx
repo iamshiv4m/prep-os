@@ -10,7 +10,9 @@ export default function Footer() {
           <Logo instanceId="footer-logo" className="h-7 w-7" />
           <div>
             <div className="text-[13px] font-semibold text-white">{APP.name}</div>
-            <div className="text-[11.5px] text-white/45">Built with care · MIT licensed · v0.1</div>
+            <div className="text-[11.5px] text-white/60">
+              Built with care · MIT licensed · v{APP.version}
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-white/55">
@@ -24,10 +26,11 @@ export default function Footer() {
             Install help
           </a>
           <a
-            className="flex items-center gap-1.5 transition-colors hover:text-white"
+            className="flex items-center gap-1.5 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
             href={REPO_URL}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
+            aria-label={`${APP.name} source code on GitHub`}
           >
             <GithubIcon className="h-3.5 w-3.5" /> Source
           </a>

@@ -166,7 +166,7 @@ We intentionally skip `electron-updater` and the code-signing costs that come wi
 
 1. On boot (packaged builds only), [`src/main/update-checker.ts`](../src/main/update-checker.ts) fetches `https://api.github.com/repos/iamshiv4m/prep-os/releases/latest`.
 2. If the `tag_name` beats `app.getVersion()`, main sends an `update:available` event to the renderer.
-3. The renderer renders a dismissible banner ([`src/renderer/src/components/UpdateBanner.tsx`](../src/renderer/src/components/UpdateBanner.tsx)) whose "Download" button calls `window.prepOS.openExternal(url)` and opens `https://prepos.app#download` in the system browser.
+3. The renderer renders a dismissible banner ([`src/renderer/src/components/UpdateBanner.tsx`](../src/renderer/src/components/UpdateBanner.tsx)) whose "Download" button calls `window.prepOS.openExternal(url)` and opens `https://prep-os.queztlabs.tech#download` in the system browser.
 4. Users re-install the DMG / exe / AppImage manually.
 
 Manual "Check for Updates…" in the menubar drops down the same flow: it calls `window.prepOS.checkForUpdates()` and — on `status: "available"` — immediately opens the website.

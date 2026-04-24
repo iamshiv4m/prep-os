@@ -1,6 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import appIcon from "../assets/app-icon.png";
 
 interface Props {
   open: boolean;
@@ -31,7 +33,12 @@ export default function AboutModal({ open, onClose }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  return (
+  // Portal the modal to <body> so it escapes the Menubar's containing block.
+  // The Menubar root uses `backdrop-blur-2xl`, which (per the CSS spec)
+  // creates a containing block for any descendant with `position: fixed`.
+  // Without the portal, `inset-0` would resolve to the 28px-tall Menubar
+  // instead of the full viewport, pinning the modal to the very top.
+  const overlay = (
     <AnimatePresence>
       {open && (
         <motion.div
@@ -39,7 +46,7 @@ export default function AboutModal({ open, onClose }: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 z-[9800] flex items-center justify-center bg-black/45 backdrop-blur-sm"
+          className="fixed inset-0 z-[9800] flex items-center justify-center bg-black/60 backdrop-blur-md"
         >
           <motion.div
             initial={{ scale: 0.94, y: 8, opacity: 0 }}
@@ -47,7 +54,12 @@ export default function AboutModal({ open, onClose }: Props) {
             exit={{ scale: 0.96, y: 6, opacity: 0 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-neutral-900/92 relative w-[380px] max-w-[92vw] overflow-hidden rounded-2xl border border-white/15 p-6 text-center text-white shadow-[0_30px_80px_-18px_rgba(0,0,0,0.75)] backdrop-blur-2xl"
+            // Use an arbitrary hex (not Tailwind's `/92` modifier — `/92` is not
+            // on the standard opacity scale, so the class is never generated and
+            // the card renders fully transparent on top of the desktop, with
+            // hero text bleeding through. `bg-[#0c0c12]` is a guaranteed solid
+            // dark surface that matches the rest of the macOS-style chrome.
+            className="relative w-[380px] max-w-[92vw] overflow-hidden rounded-2xl border border-white/15 bg-[#0c0c12] p-6 text-center text-white shadow-[0_30px_80px_-18px_rgba(0,0,0,0.75)]"
           >
             <button
               onClick={onClose}
@@ -56,9 +68,12 @@ export default function AboutModal({ open, onClose }: Props) {
             >
               <X className="h-3.5 w-3.5" />
             </button>
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-[22px] bg-gradient-to-br from-amber-400/25 via-rose-500/25 to-indigo-500/25 text-4xl ring-1 ring-white/15">
-              ◆
-            </div>
+            <img
+              src={appIcon}
+              alt="PrepOS app icon"
+              className="mx-auto mb-4 h-20 w-20 rounded-[22px] shadow-[0_10px_30px_-10px_rgba(124,58,237,0.55)] ring-1 ring-white/10"
+              draggable={false}
+            />
             <div className="text-[18px] font-semibold tracking-tight">PrepOS</div>
             <div className="mt-0.5 text-[11px] text-white/45">Version {version}</div>
             <p className="mt-4 text-[12.5px] leading-relaxed text-white/70">
@@ -79,4 +94,7 @@ export default function AboutModal({ open, onClose }: Props) {
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(overlay, document.body);
 }

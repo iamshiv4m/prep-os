@@ -110,7 +110,7 @@ export interface Tip {
   link?: string;
 }
 
-export type FeedCategory = "frontend" | "backend" | "system-design" | "general";
+export type FeedCategory = "career" | "frontend" | "backend" | "system-design" | "general";
 
 export interface FeedSource {
   id: string;
@@ -140,6 +140,27 @@ export interface FeedSnapshot {
   items: FeedItem[];
   updatedAt: number;
   errors: Array<{ sourceId: string; message: string }>;
+}
+
+export type ContestPlatform = "leetcode" | "codeforces";
+
+export interface ContestItem {
+  id: string;
+  platform: ContestPlatform;
+  name: string;
+  url: string;
+  /** UTC ms timestamp when contest starts. */
+  startsAt: number;
+  /** Duration in milliseconds. */
+  durationMs: number;
+  /** Original payload from the upstream API, retained for debugging. */
+  raw?: unknown;
+}
+
+export interface ContestSnapshot {
+  items: ContestItem[];
+  updatedAt: number;
+  errors: Array<{ platform: string; message: string }>;
 }
 
 export interface AIChatRequest {
@@ -240,6 +261,10 @@ export interface ElectronAPI {
     sources: () => Promise<FeedSource[]>;
     list: () => Promise<FeedSnapshot>;
     refresh: () => Promise<FeedSnapshot>;
+  };
+  contests: {
+    list: () => Promise<ContestSnapshot>;
+    refresh: () => Promise<ContestSnapshot>;
   };
   openExternal: (url: string) => Promise<void>;
   onOpenUrl: (cb: (url: string) => void) => () => void;

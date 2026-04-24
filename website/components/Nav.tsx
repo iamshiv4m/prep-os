@@ -31,8 +31,9 @@ export default function Nav() {
         <a
           href={REPO_URL}
           target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[12.5px] text-white/85 transition-colors hover:border-white/20 hover:bg-white/[0.07]"
+          rel="noopener noreferrer"
+          aria-label={`${APP.name} on GitHub`}
+          className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-[12.5px] text-white/85 transition-colors hover:border-white/20 hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
         >
           <GithubIcon className="h-3.5 w-3.5" />
           <span>GitHub</span>

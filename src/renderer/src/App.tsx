@@ -6,6 +6,7 @@ import FocusPicker from "./components/FocusPicker";
 import Launchpad from "./components/Launchpad";
 import Menubar from "./components/Menubar";
 import ModePicker from "./components/ModePicker";
+import PersonaPicker from "./components/PersonaPicker";
 import ShortcutsOverlay from "./components/ShortcutsOverlay";
 import SnapPreview from "./components/SnapPreview";
 import Spotlight from "./components/Spotlight";
@@ -230,6 +231,7 @@ export default function App() {
       <ModePicker />
       <AppSwitcher />
       <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcuts(false)} />
+      <PersonaPicker />
       <UpdateBanner />
     </div>
   );

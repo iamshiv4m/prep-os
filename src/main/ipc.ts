@@ -29,6 +29,7 @@ import {
   removeCapture,
 } from "./capture.js";
 import { chatWithAI } from "./ai-gateway.js";
+import { getContests, refreshContests } from "./contests.js";
 import { getFeed, listFeedSources, refreshAllFeeds } from "./feed.js";
 import { setFocusGuard } from "./focus-guard.js";
 import {
@@ -176,6 +177,9 @@ export function setupIPC(getMain: () => BrowserWindow | null): void {
   ipcMain.handle("feed:sources", () => listFeedSources());
   ipcMain.handle("feed:list", () => getFeed());
   ipcMain.handle("feed:refresh", () => refreshAllFeeds());
+
+  ipcMain.handle("contests:list", () => getContests());
+  ipcMain.handle("contests:refresh", () => refreshContests());
 
   ipcMain.handle("shell:openExternal", async (_e, url: string) => {
     if (!/^https?:\/\//i.test(url)) return;

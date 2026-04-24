@@ -1,5 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Eye, EyeOff, KeyRound, Lock, Target, Trash2 } from "lucide-react";
+import {
+  Briefcase,
+  Check,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  KeyRound,
+  Lock,
+  RotateCcw,
+  Settings2,
+  Sparkles,
+  Target,
+  Trash2,
+} from "lucide-react";
 import type { AIProvider, AppSettings, FocusSession } from "@shared/types";
 import {
   formatDuration,
@@ -9,6 +22,7 @@ import {
   todayMs,
   useFocus,
 } from "../store/focus";
+import { useOnboarding, type Persona } from "../store/onboarding";
 
 const DEFAULT: AppSettings = {
   aiProvider: "openai",
@@ -198,11 +212,35 @@ export default function Settings({ initialTab }: Props) {
               </p>
             </section>
 
+            <PersonalizeSection />
+
             <section>
               <div className="mb-3 text-[13px] uppercase tracking-wide text-white/55">About</div>
-              <div className="text-[12px] text-white/60">
-                PrepOS — a desktop cockpit for tech interview prep. Plugin driven, screenshot-to-AI
-                workflow, Monaco playground, Markdown notes. Built with Electron + React.
+              <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+                <div className="text-[12px] leading-relaxed text-white/65">
+                  PrepOS — a desktop cockpit for tech interview prep. Plugin driven,
+                  screenshot-to-AI workflow, Monaco playground, Markdown notes. Built with Electron
+                  + React.
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <FeedbackLink
+                    href="https://github.com/iamshiv4m/prep-os/issues/new/choose"
+                    label="Report a bug"
+                  />
+                  <FeedbackLink
+                    href="https://github.com/iamshiv4m/prep-os/discussions"
+                    label="Discussions"
+                  />
+                  <FeedbackLink
+                    href="https://github.com/iamshiv4m/prep-os/releases"
+                    label="What's new"
+                  />
+                  <FeedbackLink href="mailto:shivamjha190@gmail.com" label="Email feedback" />
+                </div>
+                <div className="mt-3 text-[10.5px] leading-relaxed text-white/40">
+                  PrepOS is open-source (MIT) and runs entirely on your machine. No telemetry, no
+                  analytics, no account — your API keys stay in the OS keychain.
+                </div>
               </div>
             </section>
           </div>
@@ -211,6 +249,102 @@ export default function Settings({ initialTab }: Props) {
         {tab === "focus" && <FocusTab />}
       </div>
     </div>
+  );
+}
+
+/**
+ * Small inline link used in the About section. Routes through the IPC
+ * `openExternal` helper so the URL opens in the user's real browser instead
+ * of trapping them inside an Electron webview.
+ */
+function FeedbackLink({ href, label }: { href: string; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        void window.prepOS.openExternal(href).catch(() => {});
+      }}
+      className="rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-white/80 transition-colors hover:border-white/25 hover:bg-white/10 hover:text-white"
+    >
+      {label}
+    </button>
+  );
+}
+
+/**
+ * Lets users see which persona they picked at first-run and re-trigger the
+ * welcome wizard. Reset just clears the onboarding store — `<PersonaPicker />`
+ * mounted in App.tsx will instantly re-open because its `open` flag tracks
+ * `onboarding.completed`.
+ */
+function PersonalizeSection() {
+  const persona = useOnboarding((s) => s.persona);
+  const completed = useOnboarding((s) => s.completed);
+  const reset = useOnboarding((s) => s.reset);
+
+  const meta: Record<Persona, { label: string; icon: React.ReactNode; accent: string }> = {
+    student: {
+      label: "College student",
+      icon: <GraduationCap className="h-4 w-4" />,
+      accent: "#6366f1",
+    },
+    professional: {
+      label: "Working professional",
+      icon: <Briefcase className="h-4 w-4" />,
+      accent: "#8b5cf6",
+    },
+    custom: {
+      label: "Custom (no preset)",
+      icon: <Settings2 className="h-4 w-4" />,
+      accent: "#64748b",
+    },
+  };
+
+  const current = persona ? meta[persona] : null;
+
+  return (
+    <section>
+      <div className="mb-3 flex items-center gap-2 text-[13px] uppercase tracking-wide text-white/55">
+        <Sparkles className="h-3.5 w-3.5" /> Personalize
+      </div>
+      <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+              style={
+                current
+                  ? {
+                      backgroundColor: `${current.accent}22`,
+                      color: current.accent,
+                      boxShadow: `inset 0 0 0 1px ${current.accent}55`,
+                    }
+                  : { backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)" }
+              }
+            >
+              {current?.icon ?? <Sparkles className="h-4 w-4" />}
+            </div>
+            <div className="min-w-0">
+              <div className="text-[13px] font-medium text-white/90">
+                {current ? `Setup: ${current.label}` : "Setup not chosen yet"}
+              </div>
+              <div className="mt-0.5 text-[11px] leading-snug text-white/55">
+                {completed
+                  ? "Re-run the welcome wizard to switch your persona or re-launch the starter mode."
+                  : "Open the welcome wizard to pick a persona and pre-load a study mode."}
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => reset()}
+            className="flex shrink-0 items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-[12px] text-white/85 transition-colors hover:border-white/20 hover:bg-white/10 hover:text-white"
+          >
+            <RotateCcw className="h-3 w-3" />
+            {completed ? "Re-run wizard" : "Open wizard"}
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -287,12 +421,15 @@ function FocusTab() {
           </div>
         </div>
         <button
+          type="button"
           onClick={toggleHardLock}
           aria-pressed={hardLock}
-          className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${hardLock ? "bg-emerald-400/80" : "bg-white/15"}`}
+          aria-label={hardLock ? "Disable hard focus mode" : "Enable hard focus mode"}
+          className={`relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/60 ${hardLock ? "bg-emerald-400/80" : "bg-white/15"}`}
         >
           <span
-            className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${hardLock ? "translate-x-[18px]" : "translate-x-0.5"}`}
+            aria-hidden
+            className={`absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full bg-white shadow-sm transition-[left] duration-200 ease-out ${hardLock ? "left-[19px]" : "left-[3px]"}`}
           />
         </button>
       </section>

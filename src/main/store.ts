@@ -5,6 +5,7 @@ import type {
   AppSettings,
   Capture,
   ChatSession,
+  ContestSnapshot,
   FeedSnapshot,
   FocusSession,
   Note,
@@ -20,6 +21,7 @@ interface PersistedShape {
   notes: Note[];
   focusSessions: FocusSession[];
   feedCache: FeedSnapshot | null;
+  contestsCache: ContestSnapshot | null;
 }
 
 const defaultSettings: AppSettings = {
@@ -44,6 +46,7 @@ const store = new Store<PersistedShape>({
     notes: [],
     focusSessions: [],
     feedCache: null,
+    contestsCache: null,
   },
 });
 
@@ -135,4 +138,12 @@ export function getFeedCache(): FeedSnapshot | null {
 
 export function setFeedCache(snapshot: FeedSnapshot): void {
   store.set("feedCache", snapshot);
+}
+
+export function getContestsCache(): ContestSnapshot | null {
+  return store.get("contestsCache") ?? null;
+}
+
+export function setContestsCache(snapshot: ContestSnapshot): void {
+  store.set("contestsCache", snapshot);
 }

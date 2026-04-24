@@ -39,13 +39,13 @@ const FEATURES: Feature[] = [
   },
   {
     title: "Dev news, in one place",
-    body: "Hacker News, Dev.to, Smashing, freeCodeCamp, GitHub Trending — pulled into a single calm reader. No infinite scroll trap.",
+    body: "Hacker News, Dev.to, GitHub Trending, freeCodeCamp, ByteByteGo, plus India interview-prep staples (GfG, Striver, NeetCode, InterviewBit). One calm reader, no infinite scroll trap.",
     icon: <Newspaper className="h-4 w-4" />,
     accent: "from-rose-500/30 to-red-500/0",
   },
   {
     title: "Modes for every season",
-    body: "Switch contexts in one keystroke — Placement Sprint, System Design Week, Internship Hunt. Each mode opens a curated app set + focus goal.",
+    body: "Pick a persona on first launch — college student or working pro — and PrepOS pre-loads a matching dock, feed pack, and focus goal. Switch modes (Placement Sprint, System Design Week, Internship Hunt) in one keystroke.",
     icon: <Target className="h-4 w-4" />,
     accent: "from-emerald-500/30 to-teal-500/0",
   },
