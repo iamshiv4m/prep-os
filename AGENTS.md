@@ -71,7 +71,7 @@ Electron main is built as CJS. **Pure-ESM packages break it.** Do NOT add:
 - `electron-store` v10+ (we pin v8)
 - Any other ESM-only package to `dependencies` if it's used in `src/main/`
 
-If you need an ESM-only package in main, use dynamic `await import()` inside an async function, like we do for `electron-updater` in `src/main/index.ts`.
+If you need an ESM-only package in main, use dynamic `await import()` inside an async function.
 
 ### 3. IPC contract is single-source
 

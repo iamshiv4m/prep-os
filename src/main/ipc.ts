@@ -38,33 +38,19 @@ import {
   onLockdownChanged,
 } from "./lockdown.js";
 import { TIPS, tipForDay } from "@shared/tips";
+import { checkForUpdate } from "./update-checker.js";
 
 export function setupIPC(getMain: () => BrowserWindow | null): void {
-  ipcMain.handle("app:getVersion", () => process.env.npm_package_version ?? "0.1.0");
+  // app.getVersion() reads from the packaged manifest at runtime; the old
+  // env-var fallback was always undefined in production builds.
+  ipcMain.handle("app:getVersion", () => app.getVersion());
   ipcMain.handle("app:getPlatform", () => process.platform);
 
   ipcMain.handle("app:quit", () => {
     app.quit();
   });
 
-  ipcMain.handle("app:checkForUpdates", async () => {
-    if (!app.isPackaged) {
-      return { status: "dev" as const };
-    }
-    try {
-      const { autoUpdater } = await import("electron-updater");
-      const result = await autoUpdater.checkForUpdates();
-      if (result?.updateInfo) {
-        return { status: "checking" as const, version: result.updateInfo.version };
-      }
-      return { status: "up-to-date" as const };
-    } catch (err) {
-      return {
-        status: "error" as const,
-        message: err instanceof Error ? err.message : "Unknown error",
-      };
-    }
-  });
+  ipcMain.handle("app:checkForUpdates", () => checkForUpdate());
 
   ipcMain.on("window:minimize", (event) => {
     BrowserWindow.fromWebContents(event.sender)?.minimize();

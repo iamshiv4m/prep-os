@@ -21,7 +21,8 @@ Known offenders we've hit:
 Fix: either pin to the last CJS version of the package, or use a dynamic import inside an async function:
 
 ```ts
-const { autoUpdater } = await import("electron-updater");
+// example — any ESM-only package works the same way
+const { default: fetch } = await import("node-fetch");
 ```
 
 The renderer doesn't have this problem — it's built as ESM by Vite.

@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "electron-store": "^8.2.0",
-    "electron-updater": "^6.3.9",
     "fast-xml-parser": "^5.7.1",
     "framer-motion": "^11.11.17",
     "lucide-react": "^0.454.0",

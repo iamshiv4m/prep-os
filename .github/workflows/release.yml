@@ -1,0 +1,71 @@
+name: Release
+
+# Triggers when you push a tag that looks like a SemVer release. Example:
+#   git tag v0.1.0 && git push origin v0.1.0
+# Each runner builds for its own OS, then electron-builder publishes the
+# artifacts to a draft GitHub Release. After all matrix jobs finish you
+# publish the release in the GitHub UI (or change `publish: always` below).
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build & publish (macOS)
+        if: matrix.os == 'macos-latest'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: branded download page for the in-app update banner. If
+          # unset, the banner deep-links to the GitHub Release page instead
+          # (which always works). Set as a repo / org variable, not a secret.
+          PREPOS_WEBSITE_URL: ${{ vars.PREPOS_WEBSITE_URL }}
+          # Once you have an Apple Developer cert, uncomment these and add
+          # the corresponding repo secrets to enable signing + notarization:
+          # CSC_LINK: ${{ secrets.MAC_CERTS }}
+          # CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: npm run dist:mac -- --publish always
+
+      - name: Build & publish (Windows)
+        if: matrix.os == 'windows-latest'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREPOS_WEBSITE_URL: ${{ vars.PREPOS_WEBSITE_URL }}
+          # Once you have a Windows code-signing cert, uncomment:
+          # CSC_LINK: ${{ secrets.WIN_CERTS }}
+          # CSC_KEY_PASSWORD: ${{ secrets.WIN_CERTS_PASSWORD }}
+        run: npm run dist:win -- --publish always
+
+      - name: Build & publish (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREPOS_WEBSITE_URL: ${{ vars.PREPOS_WEBSITE_URL }}
+        run: npm run dist:linux -- --publish always

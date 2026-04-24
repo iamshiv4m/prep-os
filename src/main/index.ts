@@ -16,6 +16,7 @@ import { setupIPC } from "./ipc.js";
 import { getSettings } from "./store.js";
 import { setOnFocusGuardChanged } from "./focus-guard.js";
 import { disableLockdown, isLockdownActive } from "./lockdown.js";
+import { scheduleStartupCheck } from "./update-checker.js";
 
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = "true";
 
@@ -218,18 +219,13 @@ function createTray(): void {
   }
 }
 
-async function setupAutoUpdate(): Promise<void> {
-  if (!app.isPackaged) return;
-  try {
-    const { autoUpdater } = await import("electron-updater");
-    autoUpdater.autoDownload = true;
-    autoUpdater.on("update-downloaded", () => {
-      mainWindow?.webContents.send("update:available");
-    });
-    await autoUpdater.checkForUpdatesAndNotify().catch(() => null);
-  } catch (err) {
-    console.warn("auto-update setup failed", err);
-  }
+// NOTE: We deliberately don't use electron-updater. Auto-update requires
+// signed builds on macOS (paid Apple Developer account) and SmartScreen-
+// whitelisted installers on Windows (EV cert $$$). Instead, the main process
+// just pings GitHub for the latest release on boot and the renderer shows a
+// banner linking to the website's download page. Manual but free.
+function setupUpdateCheck(): void {
+  scheduleStartupCheck(() => mainWindow);
 }
 
 function buildAppMenu(): void {
@@ -323,7 +319,7 @@ app.whenReady().then(() => {
   createMainWindow();
   registerShortcuts();
   createTray();
-  void setupAutoUpdate();
+  setupUpdateCheck();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

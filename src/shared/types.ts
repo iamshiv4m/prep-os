@@ -160,15 +160,27 @@ export interface AIChatResponse {
 
 export type UpdateCheckResult =
   | { status: "dev" }
-  | { status: "up-to-date" }
-  | { status: "checking"; version: string }
+  | { status: "up-to-date"; current: string }
+  | {
+      status: "available";
+      current: string;
+      latest: string;
+      url: string;
+      notes: string;
+      publishedAt: string;
+    }
   | { status: "error"; message: string };
+
+/** Event payload pushed to renderer when the boot-time check finds a release newer than the installed version. */
+export type UpdateAvailablePayload = Extract<UpdateCheckResult, { status: "available" }>;
 
 export interface ElectronAPI {
   getVersion: () => Promise<string>;
   getPlatform: () => Promise<NodeJS.Platform>;
   quit: () => Promise<void>;
   checkForUpdates: () => Promise<UpdateCheckResult>;
+  /** Subscribe to startup-time update discovery. Returns an unsubscribe fn. */
+  onUpdateAvailable: (cb: (payload: UpdateAvailablePayload) => void) => () => void;
   windowControls: {
     minimize: () => void;
     maximize: () => void;

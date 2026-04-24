@@ -9,6 +9,7 @@ import ModePicker from "./components/ModePicker";
 import ShortcutsOverlay from "./components/ShortcutsOverlay";
 import SnapPreview from "./components/SnapPreview";
 import Spotlight from "./components/Spotlight";
+import UpdateBanner from "./components/UpdateBanner";
 import Window from "./components/Window";
 import AppRouter from "./apps/AppRouter";
 import { useFocus } from "./store/focus";
@@ -229,6 +230,7 @@ export default function App() {
       <ModePicker />
       <AppSwitcher />
       <ShortcutsOverlay open={shortcutsOpen} onClose={() => setShortcuts(false)} />
+      <UpdateBanner />
     </div>
   );
 }

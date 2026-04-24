@@ -4,6 +4,22 @@ A macOS-style desktop cockpit for tech interview prep, built with **Electron + R
 
 PrepOS looks like a mini operating system inside one Electron window: desktop, dock, draggable / resizable windows, Launchpad and Spotlight. Every interview prep platform (LeetCode, HackerRank, DevTools Tech, etc.) is an "app" in the dock. The signature feature is **Capture → AI**: screenshot any region of your screen and ask GPT-4o / Claude about it directly inside the app.
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/iamshiv4m/prep-os?include_prereleases&label=release)](https://github.com/iamshiv4m/prep-os/releases/latest)
+[![Build](https://github.com/iamshiv4m/prep-os/actions/workflows/release.yml/badge.svg)](https://github.com/iamshiv4m/prep-os/actions/workflows/release.yml)
+
+## Download
+
+Grab the latest build for your OS from the **[releases page](https://github.com/iamshiv4m/prep-os/releases/latest)** or visit **[prepos.app](https://prepos.app)** for an OS-aware download experience.
+
+| OS      | File                                                                      |
+| ------- | ------------------------------------------------------------------------- |
+| macOS   | `PrepOS-x.y.z-arm64.dmg` (Apple Silicon) / `PrepOS-x.y.z-x64.dmg` (Intel) |
+| Windows | `PrepOS-Setup-x.y.z.exe` (NSIS installer)                                 |
+| Linux   | `PrepOS-x.y.z.AppImage` / `prep-os_x.y.z_amd64.deb`                       |
+
+> First launch on an unsigned build triggers an OS warning — see [bypass instructions](#first-launch-on-an-unsigned-build) below.
+
 ![OS shell preview](docs/preview.png) <!-- add a screenshot later -->
 
 ## Features
@@ -125,3 +141,27 @@ Deep dives:
 ## Status
 
 MVP covers Phases 0 → 5 of the plan. See the in-repo plan for the roadmap.
+Release notes live in [CHANGELOG.md](CHANGELOG.md).
+
+## Contributing
+
+PRs and issues welcome — anything from bug reports to new built-in plugins
+to UI polish. Before opening a PR:
+
+- Run `npm run check` (typecheck + lint + format) and make sure it passes.
+- For bigger features, open a discussion or draft PR first so we can align
+  on direction.
+
+For security issues, please **don't** open a public issue — see
+[SECURITY.md](SECURITY.md) for the private reporting process.
+
+## Privacy
+
+PrepOS runs entirely on your machine — no telemetry, no analytics, no
+servers. The only network traffic is to AI providers you configure
+(OpenAI / Anthropic), public RSS feeds you subscribe to, and a once-per-boot
+GitHub release check. Full details in [PRIVACY.md](PRIVACY.md).
+
+## License
+
+[MIT](LICENSE) © 2026 Shivam Jha.

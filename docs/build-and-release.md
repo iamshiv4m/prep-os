@@ -160,17 +160,20 @@ electron-builder will sign the NSIS installer + executables. Without signing, Wi
 
 No signing required. AppImages can be signed with GPG via `gpgPath` in the YAML; rarely needed.
 
-## Auto-updates
+## Updates (website-based, no signing required)
 
-[`src/main/index.ts#setupAutoUpdate`](../src/main/index.ts) dynamically imports `electron-updater` and calls `autoUpdater.checkForUpdatesAndNotify()` — only in packaged builds (`app.isPackaged`).
+We intentionally skip `electron-updater` and the code-signing costs that come with real auto-update. Instead:
 
-For it to work in the wild:
+1. On boot (packaged builds only), [`src/main/update-checker.ts`](../src/main/update-checker.ts) fetches `https://api.github.com/repos/iamshiv4m/prep-os/releases/latest`.
+2. If the `tag_name` beats `app.getVersion()`, main sends an `update:available` event to the renderer.
+3. The renderer renders a dismissible banner ([`src/renderer/src/components/UpdateBanner.tsx`](../src/renderer/src/components/UpdateBanner.tsx)) whose "Download" button calls `window.prepOS.openExternal(url)` and opens `https://prepos.app#download` in the system browser.
+4. Users re-install the DMG / exe / AppImage manually.
 
-1. The `publish` section in `electron-builder.yml` must point at where your updates live (GitHub Releases, S3, etc.).
-2. The host must serve the `latest-mac.yml` / `latest.yml` / `latest-linux.yml` files electron-builder produces.
-3. The running app must match the publish target (same appId, same provider).
+Manual "Check for Updates…" in the menubar drops down the same flow: it calls `window.prepOS.checkForUpdates()` and — on `status: "available"` — immediately opens the website.
 
-When an update is available, it downloads in background and applies on next relaunch by default. You can wire custom dialogs by listening to `update-downloaded` / `update-available` events on the `autoUpdater` object (not currently wired — see the dynamic import block for the place to add them).
+The dismiss state is stored in `localStorage` under `prepos.update.dismissedVersion`, so clicking "Later" suppresses the banner until the _next_ release ships, not forever.
+
+If you ever want to enable true in-place auto-updates on Linux (AppImage doesn't need signing): re-install `electron-updater`, set the `publish` section in `electron-builder.yml`, and wire `autoUpdater.checkForUpdatesAndNotify()` inside `setupUpdateCheck` with a `process.platform === "linux"` guard.
 
 ## Release workflow (recommended)
 

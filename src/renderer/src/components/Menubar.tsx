@@ -1,6 +1,8 @@
 import {
+  Bug,
   Camera,
   ExternalLink,
+  Heart,
   Info,
   Keyboard,
   LogOut,
@@ -11,6 +13,7 @@ import {
   RefreshCw,
   Settings as SettingsIcon,
   Sparkles,
+  Star,
   Target,
   Wifi,
   X,
@@ -183,23 +186,24 @@ export default function Menubar() {
           pushNotification({
             kind: "update",
             title: "Development build",
-            body: "Auto-updates only run in packaged releases.",
+            body: "Update checks only run in packaged releases.",
             icon: "🛠️",
           });
         } else if (res.status === "up-to-date") {
           pushNotification({
             kind: "update",
             title: "You're up to date",
-            body: "No new updates available right now.",
+            body: `Running PrepOS ${res.current}. No new release yet.`,
             icon: "✅",
           });
-        } else if (res.status === "checking") {
+        } else if (res.status === "available") {
           pushNotification({
             kind: "update",
-            title: `Update ${res.version} downloading`,
-            body: "You'll be prompted to install when it's ready.",
+            title: `PrepOS ${res.latest} is available`,
+            body: "Opening the download page in your browser…",
             icon: "⬇️",
           });
+          await window.prepOS.openExternal(res.url);
         } else {
           pushNotification({
             kind: "update",
@@ -211,6 +215,26 @@ export default function Menubar() {
       },
     },
     { id: "sep-3", type: "separator" },
+    {
+      id: "report-issue",
+      label: "Report an Issue…",
+      icon: <Bug className="h-3.5 w-3.5" />,
+      onSelect: () =>
+        void window.prepOS.openExternal("https://github.com/iamshiv4m/prep-os/issues/new"),
+    },
+    {
+      id: "star",
+      label: "Star on GitHub",
+      icon: <Star className="h-3.5 w-3.5" />,
+      onSelect: () => void window.prepOS.openExternal("https://github.com/iamshiv4m/prep-os"),
+    },
+    {
+      id: "sponsor",
+      label: "Support PrepOS",
+      icon: <Heart className="h-3.5 w-3.5 text-rose-300" />,
+      onSelect: () => void window.prepOS.openExternal("https://github.com/sponsors/iamshiv4m"),
+    },
+    { id: "sep-4", type: "separator" },
     {
       id: "quit",
       label: "Quit PrepOS",

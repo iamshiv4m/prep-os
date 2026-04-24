@@ -14,7 +14,7 @@ Responsible for:
 - Installing the native app menu (macOS) via `buildAppMenu`.
 - Registering global shortcuts via `registerShortcuts` (currently just `Cmd+Shift+A` for region capture).
 - Creating the system tray with "Show / Capture / Quit" items (`createTray`).
-- Booting the auto-updater in packaged builds only (`setupAutoUpdate`, uses dynamic `import("electron-updater")` because the package is ESM-only and can't be synchronously `require`d from a CJS bundle).
+- Scheduling the website-based update check in packaged builds only (`setupUpdateCheck` → [`src/main/update-checker.ts`](../src/main/update-checker.ts)). We deliberately don't use `electron-updater` — code signing is a paid/platform-specific chore, so instead the checker just fetches GitHub's latest release on boot and, if newer than `app.getVersion()`, pushes an `update:available` event to the renderer. The renderer shows a dismissible banner (`UpdateBanner.tsx`) that deep-links back to the website's download page. Manual re-install, zero certs.
 - Calling `setupIPC()` to register all IPC channels before the window loads.
 
 Lifecycle hooks:

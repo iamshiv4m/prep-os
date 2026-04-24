@@ -8,6 +8,7 @@ import type {
   FocusSession,
   Note,
   PluginManifest,
+  UpdateAvailablePayload,
 } from "@shared/types";
 
 const focusForceEndListeners = new Set<() => void>();
@@ -55,11 +56,28 @@ ipcRenderer.on("lockdown:changed", (_event, active: boolean) => {
   });
 });
 
+const updateAvailableListeners = new Set<(payload: UpdateAvailablePayload) => void>();
+ipcRenderer.on("update:available", (_event, payload: UpdateAvailablePayload) => {
+  updateAvailableListeners.forEach((fn) => {
+    try {
+      fn(payload);
+    } catch (err) {
+      console.error("update:available listener error", err);
+    }
+  });
+});
+
 const api: ElectronAPI = {
   getVersion: () => ipcRenderer.invoke("app:getVersion"),
   getPlatform: () => ipcRenderer.invoke("app:getPlatform"),
   quit: () => ipcRenderer.invoke("app:quit"),
   checkForUpdates: () => ipcRenderer.invoke("app:checkForUpdates"),
+  onUpdateAvailable: (cb: (payload: UpdateAvailablePayload) => void) => {
+    updateAvailableListeners.add(cb);
+    return () => {
+      updateAvailableListeners.delete(cb);
+    };
+  },
   windowControls: {
     minimize: () => ipcRenderer.send("window:minimize"),
     maximize: () => ipcRenderer.send("window:maximize"),
