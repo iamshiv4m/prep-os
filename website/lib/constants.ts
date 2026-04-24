@@ -32,5 +32,5 @@ export const APP = {
     url: "https://github.com/iamshiv4m",
   },
   /** Software version surfaced in JSON-LD; kept aligned with desktop app package.json. */
-  version: "0.1.1",
+  version: "0.1.2",
 } as const;
