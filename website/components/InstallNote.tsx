@@ -27,19 +27,22 @@ export default function InstallNote() {
           >
             <ol className="space-y-3 text-[13.5px] text-white/80">
               <Step n={1}>
-                Right-click <Kbd>PrepOS.app</Kbd> → <b>Open</b>, then confirm <b>Open</b> in the
-                dialog.
+                Move <Kbd>PrepOS.app</Kbd> into <b>/Applications</b> (drag from the DMG).
               </Step>
               <Step n={2}>
-                Or open <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>
-                .
+                Open Terminal and run this one-liner to remove the quarantine flag:
+                <CodeBlock>xattr -dr com.apple.quarantine /Applications/PrepOS.app</CodeBlock>
+                <span className="mt-1.5 block text-[11.5px] text-white/45">
+                  Works on every macOS version including Sequoia 15+, where Apple removed the{" "}
+                  <b>Open Anyway</b> button for unsigned apps.
+                </span>
               </Step>
-              <Step n={3}>
-                Still blocked? Run this in Terminal:
-                <CodeBlock>
-                  xattr -dr com.apple.quarantine{"\n"}
-                  /Applications/PrepOS.app
-                </CodeBlock>
+              <Step n={3}>Now double-click to launch — Gatekeeper stays quiet from here on.</Step>
+              <Step n={4}>
+                <span className="text-white/55">Alternative (older macOS):</span> right-click{" "}
+                <Kbd>PrepOS.app</Kbd> → <b>Open</b> and confirm in the dialog. If a two-button{" "}
+                <b>Open Anyway</b> appears under <b>System Settings → Privacy &amp; Security</b>,
+                that also works — but it&apos;s hidden on Sequoia.
               </Step>
             </ol>
           </Card>

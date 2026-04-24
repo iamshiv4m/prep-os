@@ -65,9 +65,18 @@ Because PrepOS is not yet signed / notarized, the OS will warn end-users on firs
 
 > "PrepOS can't be opened because Apple cannot check it for malicious software."
 
-1. Right-click `PrepOS.app` in Finder → **Open** → **Open** again in the dialog. _(One-time; macOS remembers the choice.)_
-2. Or open **System Settings → Privacy & Security**, scroll to the bottom and click **Open Anyway** next to the PrepOS warning.
-3. If macOS quarantines the app entirely, run: `xattr -dr com.apple.quarantine /Applications/PrepOS.app`
+On **macOS 15 Sequoia and newer**, Apple has removed the _Open Anyway_ button for unsigned apps, so the Privacy & Security panel won't help. Use the Terminal fix:
+
+1. Drag `PrepOS.app` from the DMG into `/Applications`.
+2. In Terminal, strip the quarantine attribute (works on every macOS version):
+
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/PrepOS.app
+   ```
+
+3. Double-click to launch. No more warnings on subsequent runs.
+
+_On older macOS (pre-Sequoia)_, the GUI workaround also works: right-click `PrepOS.app` → **Open** → confirm **Open** in the dialog, or use **System Settings → Privacy & Security → Open Anyway**.
 
 **Windows (SmartScreen)**
 
