@@ -3,7 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "description": "A macOS-like desktop app for interview prep — dock, windows, plugin integrations, and region-capture AI chat.",
-  "author": "Shivam Jha",
+  "author": {
+    "name": "Shivam Jha",
+    "email": "shivamjha190@gmail.com",
+    "url": "https://github.com/iamshiv4m"
+  },
+  "homepage": "https://github.com/iamshiv4m/prep-os#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iamshiv4m/prep-os.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iamshiv4m/prep-os/issues"
+  },
+  "license": "MIT",
   "main": "out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
