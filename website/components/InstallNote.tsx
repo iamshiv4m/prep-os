@@ -1,4 +1,5 @@
 import { ShieldCheck, Terminal, Apple, Monitor, Container } from "lucide-react";
+import CodeBlock from "./CodeBlock";
 
 export default function InstallNote() {
   return (
@@ -44,7 +45,7 @@ export default function InstallNote() {
                 <b>If macOS blocks it instead</b> (&ldquo;Apple cannot check it for malicious
                 software&rdquo; with no <i>Open Anyway</i> button), strip the quarantine flag in
                 Terminal:
-                <CodeBlock>xattr -dr com.apple.quarantine /Applications/PrepOS.app</CodeBlock>
+                <CodeBlock code="xattr -dr com.apple.quarantine /Applications/PrepOS.app" />
                 <span className="mt-1.5 block text-[11.5px] text-white/45">
                   Works on every macOS version including Sequoia 15+, where Apple removed the{" "}
                   <b>Open Anyway</b> button for unsigned apps. Double-click afterwards — Gatekeeper
@@ -91,10 +92,7 @@ export default function InstallNote() {
               </Step>
               <Step n={2}>
                 Or via terminal:
-                <CodeBlock>
-                  chmod +x PrepOS-*.AppImage{"\n"}
-                  ./PrepOS-*.AppImage
-                </CodeBlock>
+                <CodeBlock code={"chmod +x PrepOS-*.AppImage\n./PrepOS-*.AppImage"} />
               </Step>
               <Step n={3}>On first launch it auto-integrates into your launcher / dock.</Step>
             </ol>
@@ -157,12 +155,4 @@ function Step({ n, children }: { n: number; children: React.ReactNode }) {
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return <code className="kbd whitespace-nowrap">{children}</code>;
-}
-
-function CodeBlock({ children }: { children: React.ReactNode }) {
-  return (
-    <pre className="mt-2 w-full overflow-x-auto rounded-md border border-white/10 bg-black/40 p-2.5 font-mono text-[11.5px] leading-relaxed text-white/85">
-      <code className="whitespace-pre">{children}</code>
-    </pre>
-  );
 }

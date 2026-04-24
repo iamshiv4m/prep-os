@@ -1,4 +1,5 @@
 import GithubIcon from "@/components/icons/GithubIcon";
+import Logo from "@/components/icons/Logo";
 import { APP, REPO_URL } from "@/lib/constants";
 
 export default function Footer() {
@@ -6,12 +7,7 @@ export default function Footer() {
     <footer className="relative border-t border-white/5 py-12">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-6 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
-          <span
-            aria-hidden
-            className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white"
-          >
-            P
-          </span>
+          <Logo instanceId="footer-logo" className="h-7 w-7" />
           <div>
             <div className="text-[13px] font-semibold text-white">{APP.name}</div>
             <div className="text-[11.5px] text-white/45">Built with care · MIT licensed · v0.1</div>

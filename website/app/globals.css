@@ -93,4 +93,13 @@
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.9);
   }
+
+  /* Hide scrollbars but keep scroll behavior (touch swipe, wheel still work). */
+  .no-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE / old Edge */
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Safari / Chrome */
+  }
 }

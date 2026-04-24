@@ -1,5 +1,6 @@
 import Link from "next/link";
 import GithubIcon from "@/components/icons/GithubIcon";
+import Logo from "@/components/icons/Logo";
 import { APP, REPO_URL } from "@/lib/constants";
 
 export default function Nav() {
@@ -8,14 +9,12 @@ export default function Nav() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
         <Link
           href="/"
-          className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"
+          className="group flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"
         >
-          <span
-            aria-hidden
-            className="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_4px_18px_-4px_rgba(139,92,246,0.6)]"
-          >
-            P
-          </span>
+          <Logo
+            instanceId="nav-logo"
+            className="h-7 w-7 drop-shadow-[0_4px_14px_rgba(124,92,255,0.4)] transition-transform duration-300 group-hover:scale-[1.06]"
+          />
           {APP.name}
         </Link>
         <nav className="hidden items-center gap-7 text-[13px] text-[color:var(--color-ink-muted)] md:flex">
