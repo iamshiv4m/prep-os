@@ -6,6 +6,8 @@ follows [SemVer](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-04-25
+
 ### Added
 
 - **First-run persona picker** — on first launch, choose between **College

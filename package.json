@@ -1,6 +1,6 @@
 {
   "name": "prep-os",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "A macOS-like desktop app for interview prep — dock, windows, plugin integrations, and region-capture AI chat.",
   "author": {
