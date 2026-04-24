@@ -27,22 +27,35 @@ export default function InstallNote() {
           >
             <ol className="space-y-3 text-[13.5px] text-white/80">
               <Step n={1}>
-                Move <Kbd>PrepOS.app</Kbd> into <b>/Applications</b> (drag from the DMG).
+                <b>Don&apos;t run PrepOS from the DMG.</b> Open the DMG and{" "}
+                <b>drag PrepOS.app onto the /Applications shortcut</b> next to it, then eject the
+                DMG.
+                <span className="mt-1.5 block text-[11.5px] text-white/45">
+                  Launching straight from the mounted disk image triggers a repeat warning every
+                  time. Copying to <b>/Applications</b> is a one-time step.
+                </span>
               </Step>
               <Step n={2}>
-                Open Terminal and run this one-liner to remove the quarantine flag:
+                Double-click <Kbd>/Applications/PrepOS.app</Kbd>. If macOS asks{" "}
+                <i>&ldquo;Are you sure you want to open it?&rdquo;</i> click <b>Open</b> — this is a
+                one-time confirmation.
+              </Step>
+              <Step n={3}>
+                <b>If macOS blocks it instead</b> (&ldquo;Apple cannot check it for malicious
+                software&rdquo; with no <i>Open Anyway</i> button), strip the quarantine flag in
+                Terminal:
                 <CodeBlock>xattr -dr com.apple.quarantine /Applications/PrepOS.app</CodeBlock>
                 <span className="mt-1.5 block text-[11.5px] text-white/45">
                   Works on every macOS version including Sequoia 15+, where Apple removed the{" "}
-                  <b>Open Anyway</b> button for unsigned apps.
+                  <b>Open Anyway</b> button for unsigned apps. Double-click afterwards — Gatekeeper
+                  stays quiet from here on.
                 </span>
               </Step>
-              <Step n={3}>Now double-click to launch — Gatekeeper stays quiet from here on.</Step>
               <Step n={4}>
-                <span className="text-white/55">Alternative (older macOS):</span> right-click{" "}
-                <Kbd>PrepOS.app</Kbd> → <b>Open</b> and confirm in the dialog. If a two-button{" "}
-                <b>Open Anyway</b> appears under <b>System Settings → Privacy &amp; Security</b>,
-                that also works — but it&apos;s hidden on Sequoia.
+                <span className="text-white/55">Older macOS only:</span> right-click{" "}
+                <Kbd>PrepOS.app</Kbd> → <b>Open</b> and confirm in the dialog, or visit{" "}
+                <b>System Settings → Privacy &amp; Security → Open Anyway</b>. On Sequoia these are
+                hidden — use the Terminal fix above.
               </Step>
             </ol>
           </Card>

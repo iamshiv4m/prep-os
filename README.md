@@ -64,19 +64,20 @@ Because PrepOS is not yet signed / notarized, the OS will warn end-users on firs
 **macOS (Gatekeeper)**
 
 > "PrepOS can't be opened because Apple cannot check it for malicious software."
+> or
+> "This item is on the disk image 'PrepOS-x.y.z-arm64.dmg'. Chrome downloaded this disk image today…"
 
-On **macOS 15 Sequoia and newer**, Apple has removed the _Open Anyway_ button for unsigned apps, so the Privacy & Security panel won't help. Use the Terminal fix:
-
-1. Drag `PrepOS.app` from the DMG into `/Applications`.
-2. In Terminal, strip the quarantine attribute (works on every macOS version):
+1. **Don't run PrepOS from the DMG.** Open the DMG and **drag `PrepOS.app` onto the `/Applications` shortcut** next to it, then eject the DMG. Running straight from the mounted image causes the warning to repeat every launch.
+2. Double-click `/Applications/PrepOS.app`. If macOS asks _"Are you sure you want to open it?"_ click **Open** — one-time confirmation, then you're in.
+3. **If macOS blocks it outright** (common on macOS 15 Sequoia+, where Apple removed the _Open Anyway_ button for unsigned apps), strip the quarantine flag from Terminal:
 
    ```bash
    xattr -dr com.apple.quarantine /Applications/PrepOS.app
    ```
 
-3. Double-click to launch. No more warnings on subsequent runs.
+   Works on every macOS version. Double-click afterwards — no more warnings.
 
-_On older macOS (pre-Sequoia)_, the GUI workaround also works: right-click `PrepOS.app` → **Open** → confirm **Open** in the dialog, or use **System Settings → Privacy & Security → Open Anyway**.
+_Older macOS only:_ the GUI workaround also works — right-click `PrepOS.app` → **Open** → confirm in the dialog, or **System Settings → Privacy & Security → Open Anyway**. On Sequoia these are hidden; use the Terminal fix above.
 
 **Windows (SmartScreen)**
 
